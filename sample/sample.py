@@ -8,4 +8,20 @@ account = Account(email, password)
 print("Robots:")
 for robot in account.robots:
     print(robot)
-    print(robot.get_robot_state().json())
+    print()
+
+    print("State:\n", robot.state)
+    print()
+
+    print("Schedule enabled:", robot.schedule_enabled)
+
+    print("Disabling schedule")
+    robot.schedule_enabled = False
+
+    print("Schedule enabled:", robot.schedule_enabled)
+
+    print("Enabling schedule")
+    robot.schedule_enabled = True
+
+    print("Schedule enabled:", robot.schedule_enabled)
+    print()

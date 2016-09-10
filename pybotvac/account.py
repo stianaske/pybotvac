@@ -1,7 +1,11 @@
 import binascii
 import os
-import urllib.parse
 import requests
+
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from .robot import Robot
 
@@ -27,7 +31,7 @@ class Account:
         :param password: Password for pybotvac account
         :return:
         """
-        response = requests.post(urllib.parse.urljoin(self.ENDPOINT, 'sessions'),
+        response = requests.post(urljoin(self.ENDPOINT, 'sessions'),
                              json={'email': email,
                                    'password': password,
                                    'platform': 'ios',
@@ -55,7 +59,7 @@ class Account:
         Get information about robots connected to account.
         :return:
         """
-        resp = requests.get(urllib.parse.urljoin(self.ENDPOINT, 'dashboard'), headers=self._headers)
+        resp = requests.get(urljoin(self.ENDPOINT, 'dashboard'), headers=self._headers)
         resp.raise_for_status()
 
         for robot in resp.json()['robots']:

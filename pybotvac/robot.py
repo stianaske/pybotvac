@@ -1,4 +1,5 @@
 import requests
+import hashlib
 import hmac
 import time
 import os.path
@@ -106,7 +107,7 @@ class Auth(requests.auth.AuthBase):
 
         signing = hmac.new(key=self.secret.encode('utf8'),
                            msg='\n'.join([self.serial.lower(), date, request.body]).encode('utf8'),
-                           digestmod='sha256')
+                           digestmod=hashlib.sha256)
 
         request.headers['Date'] = date
         request.headers['Authorization'] = "NEATOAPP " + signing.hexdigest()

@@ -105,7 +105,7 @@ class Auth(requests.auth.AuthBase):
         date = time.strftime('%a, %d %h %Y %H:%M:%S', time.gmtime()) + ' GMT'
 
         signing = hmac.new(key=self.secret.encode('utf8'),
-                           msg='\n'.join([self.serial.lower(), date, request.body]).encode('utf8'),
+                           msg='\n'.join([self.serial.lower(), date, request.body.decode('utf8')]).encode('utf8'),
                            digestmod='sha256')
 
         request.headers['Date'] = date

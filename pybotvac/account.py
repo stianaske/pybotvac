@@ -2,6 +2,7 @@ import binascii
 import os
 import urllib.parse
 import requests
+import shutil
 
 from .robot import Robot
 
@@ -17,6 +18,8 @@ class Account:
 
     def __init__(self, email, password):
         self._robots = set()
+        self.robot_serials = {}
+        self._maps = {}
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
         self._login(email, password)
 
@@ -46,11 +49,22 @@ class Account:
         :return:
         """
         if not self._robots:
-            self.refresh()
+            self.refresh_robots()
 
         return self._robots
 
-    def refresh(self):
+    @property
+    def maps(self):
+        """
+        Return set of userdata for logged in account.
+        :return:
+        """
+        if not self._maps:
+            self.refresh_robots()
+
+        return self._maps
+
+    def refresh_robots(self):
         """
         Get information about robots connected to account.
         :return:
@@ -61,5 +75,26 @@ class Account:
         for robot in resp.json()['robots']:
             self._robots.add(Robot(name=robot['name'],
                                    serial=robot['serial'],
-                                   secret=robot['secret_key']))
+                                   secret=robot['secret_key'],
+                                   traits=robot['traits']))
+            resp2 = requests.get(urllib.parse.urljoin(self.ENDPOINT, 'users/me/robots/{}/maps'.format(robot['serial'])), headers=self._headers)
+            resp2.raise_for_status()
+            self._maps = {robot['serial']: resp2.json()}
 
+    def get_map_image(self, url, dest_path):
+        """
+        Return a requested map from a robot.
+        :return:
+        """
+        i1 = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
+        print(i1)
+        image_filename = i1.split('?')[0]
+        print(image_filename)
+        dest = os.path.join(dest_path, image_filename)
+        print(dest)
+        print(url)
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        with open((dest), 'wb') as f:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, f)       

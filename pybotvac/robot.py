@@ -10,7 +10,7 @@ requests.packages.urllib3.disable_warnings()
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, name=''):
+    def __init__(self, serial, secret, traits, name=''):
         """
         Initialize robot
 
@@ -21,12 +21,13 @@ class Robot:
         self.name = name
         self.serial = serial
         self.secret = secret
+        self.traits = traits
 
         self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
     def __str__(self):
-        return "Name: %s, Serial: %s, Secret: %s" % (self.name, self.serial, self.secret)
+        return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
 
     def _message(self, json):
         """
@@ -77,6 +78,15 @@ class Robot:
 
     def get_schedule(self):
         return self._message({'reqId': "1", 'cmd': "getSchedule"})
+
+    def findme(self):
+        return self._message({'reqId': "1", 'cmd': "findme"})
+
+    def get_local_stats(self):
+        return self._message({'reqId': "1", 'cmd': "getLocalStats"})
+
+    def get_general_info(self):
+        return self._message({'reqId': "1", 'cmd': "getGeneralInfo"})
 
     @property
     def schedule_enabled(self):

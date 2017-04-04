@@ -63,12 +63,14 @@ If the serial and secret is unknown, they can be retrieved using the Account cla
     Name: my_robot_name, Serial: OPS01234-0123456789AB, Secret: 0123456789ABCDEF0123456789ABCDEF, Traits: ['maps']
 
 Information about maps and download of maps can be done from the Account class:
+
     >>> from pybotvac import Account
     >>> # List all maps associated with a specific robot
     >>> for map_info in Account('sample@email.com', 'sample_password').maps:
         print(map_info)
 
 A cleaning map can be downloaded with the account class. Example shows latest map. You need the url from the map output to do that:
+
     >>> from pybotvac import Account
     >>> # List all maps associated with a specific robot
     >>> map = Account('sample@email.com', 'sample_password').maps

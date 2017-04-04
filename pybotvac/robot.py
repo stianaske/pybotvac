@@ -17,6 +17,7 @@ class Robot:
         :param serial: Robot serial
         :param secret: Robot secret
         :param name: Name of robot (optional)
+        :param traits: Extras the robot supports
         """
         self.name = name
         self.serial = serial
@@ -78,15 +79,6 @@ class Robot:
 
     def get_schedule(self):
         return self._message({'reqId': "1", 'cmd': "getSchedule"})
-
-    def findme(self):
-        return self._message({'reqId': "1", 'cmd': "findme"})
-
-    def get_local_stats(self):
-        return self._message({'reqId': "1", 'cmd': "getLocalStats"})
-
-    def get_general_info(self):
-        return self._message({'reqId': "1", 'cmd': "getGeneralInfo"})
 
     @property
     def schedule_enabled(self):

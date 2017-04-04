@@ -1,22 +1,28 @@
+"""Account access and data handling for beehive endpoint."""
+
 import binascii
 import os
+import shutil
 import urllib.parse
 import requests
-import shutil
+
 
 from .robot import Robot
 
 
 class Account:
     """
-    Class containing data and methods for interacting with a pybotvac cloud session.
+    Class with data and methods for interacting with a pybotvac cloud session.
 
     :param email: Email for pybotvac account
     :param password: Password for pybotvac account
+
     """
+
     ENDPOINT = 'https://beehive.neatocloud.com/'
 
     def __init__(self, email, password):
+        """Initialize the account data."""
         self._robots = set()
         self.robot_serials = {}
         self._maps = {}
@@ -25,17 +31,20 @@ class Account:
 
     def _login(self, email, password):
         """
-        Login to pybotvac account using provided email and password
+        Login to pybotvac account using provided email and password.
+
         :param email: email for pybotvac account
         :param password: Password for pybotvac account
         :return:
         """
-        response = requests.post(urllib.parse.urljoin(self.ENDPOINT, 'sessions'),
-                             json={'email': email,
-                                   'password': password,
-                                   'platform': 'ios',
-                                   'token': binascii.hexlify(os.urandom(64)).decode('utf8')},
-                             headers=self._headers)
+        response = (
+            requests.post(urllib.parse.urljoin(self.ENDPOINT, 'sessions'),
+                          json={'email': email,
+                                'password': password,
+                                'platform': 'ios',
+                                'token': binascii.hexlify(os.urandom(64))
+                                         .decode('utf8')},
+                          headers=self._headers))
 
         response.raise_for_status()
         access_token = response.json()['access_token']
@@ -46,6 +55,7 @@ class Account:
     def robots(self):
         """
         Return set of robots for logged in account.
+
         :return:
         """
         if not self._robots:
@@ -57,6 +67,7 @@ class Account:
     def maps(self):
         """
         Return set of userdata for logged in account.
+
         :return:
         """
         if not self._maps:
@@ -67,9 +78,11 @@ class Account:
     def refresh_robots(self):
         """
         Get information about robots connected to account.
+
         :return:
         """
-        resp = requests.get(urllib.parse.urljoin(self.ENDPOINT, 'dashboard'), headers=self._headers)
+        resp = requests.get(urllib.parse.urljoin(self.ENDPOINT, 'dashboard'),
+                            headers=self._headers)
         resp.raise_for_status()
 
         for robot in resp.json()['robots']:
@@ -77,24 +90,26 @@ class Account:
                                    serial=robot['serial'],
                                    secret=robot['secret_key'],
                                    traits=robot['traits']))
-            resp2 = requests.get(urllib.parse.urljoin(self.ENDPOINT, 'users/me/robots/{}/maps'.format(robot['serial'])), headers=self._headers)
+            resp2 = (
+                requests.get(urllib.parse.urljoin(self.ENDPOINT,
+                                                  'users/me/robots/{}/maps'
+                                                  .format(robot['serial'])),
+                             headers=self._headers))
             resp2.raise_for_status()
             self._maps = {robot['serial']: resp2.json()}
 
-    def get_map_image(self, url, dest_path):
+    @staticmethod
+    def get_map_image(url, dest_path):
         """
         Return a requested map from a robot.
+
         :return:
         """
-        i1 = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
-        print(i1)
-        image_filename = i1.split('?')[0]
-        print(image_filename)
+        image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
+        image_filename = image_url.split('?')[0]
         dest = os.path.join(dest_path, image_filename)
-        print(dest)
-        print(url)
         response = requests.get(url, stream=True)
         response.raise_for_status()
-        with open((dest), 'wb') as f:
+        with open((dest), 'wb') as data:
             response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, f)       
+            shutil.copyfileobj(response.raw, data)

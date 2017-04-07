@@ -69,10 +69,24 @@ class Account:
 
         :return:
         """
-        if not self._maps:
-            self.refresh_robots()
+        self.refresh_maps()
 
         return self._maps
+
+    def refresh_maps(self):
+        """
+        Get information about maps of the robots.
+
+        :return:
+        """
+        for robot in self._robots:
+            resp2 = (
+                requests.get(urllib.parse.urljoin(self.ENDPOINT,
+                                                  'users/me/robots/{}/maps'
+                                                  .format(robot.serial)),
+                             headers=self._headers))
+            resp2.raise_for_status()
+            self._maps = {robot.serial: resp2.json()}
 
     def refresh_robots(self):
         """
@@ -89,13 +103,6 @@ class Account:
                                    serial=robot['serial'],
                                    secret=robot['secret_key'],
                                    traits=robot['traits']))
-            resp2 = (
-                requests.get(urllib.parse.urljoin(self.ENDPOINT,
-                                                  'users/me/robots/{}/maps'
-                                                  .format(robot['serial'])),
-                             headers=self._headers))
-            resp2.raise_for_status()
-            self._maps = {robot['serial']: resp2.json()}
 
     @staticmethod
     def get_map_image(url):

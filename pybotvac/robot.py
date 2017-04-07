@@ -11,23 +11,25 @@ requests.packages.urllib3.disable_warnings()
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, name=''):
+    def __init__(self, serial, secret, traits, name=''):
         """
         Initialize robot
 
         :param serial: Robot serial
         :param secret: Robot secret
         :param name: Name of robot (optional)
+        :param traits: Extras the robot supports
         """
         self.name = name
         self.serial = serial
         self.secret = secret
+        self.traits = traits
 
         self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
     def __str__(self):
-        return "Name: %s, Serial: %s, Secret: %s" % (self.name, self.serial, self.secret)
+        return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
 
     def _message(self, json):
         """
@@ -106,7 +108,7 @@ class Auth(requests.auth.AuthBase):
         date = time.strftime('%a, %d %h %Y %H:%M:%S', time.gmtime()) + ' GMT'
 
         signing = hmac.new(key=self.secret.encode('utf8'),
-                           msg='\n'.join([self.serial.lower(), date, request.body]).encode('utf8'),
+                           msg='\n'.join([self.serial.lower(), date, request.body.decode('utf8')]).encode('utf8'),
                            digestmod=hashlib.sha256)
 
         request.headers['Date'] = date

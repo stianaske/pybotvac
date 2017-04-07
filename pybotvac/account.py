@@ -2,7 +2,6 @@
 
 import binascii
 import os
-import shutil
 import urllib.parse
 import requests
 
@@ -99,17 +98,12 @@ class Account:
             self._maps = {robot['serial']: resp2.json()}
 
     @staticmethod
-    def get_map_image(url, dest_path):
+    def get_map_image(url):
         """
         Return a requested map from a robot.
 
         :return:
         """
-        image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
-        image_filename = image_url.split('?')[0]
-        dest = os.path.join(dest_path, image_filename)
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        with open((dest), 'wb') as data:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, data)
+        image = requests.get(url, stream=True, timeout=10)
+
+        return image.raw

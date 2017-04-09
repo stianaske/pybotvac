@@ -25,7 +25,7 @@ class Robot:
         self.secret = secret
         self.traits = traits
 
-        self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{}/messages'.format(self.serial)
+        self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{0}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
     def __str__(self):
@@ -105,10 +105,10 @@ class Auth(requests.auth.AuthBase):
         self.secret = secret
 
     def __call__(self, request):
-        date = time.strftime('%a, %d %h %Y %H:%M:%S', time.gmtime()) + ' GMT'
+        date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
 
         signing = hmac.new(key=self.secret.encode('utf8'),
-                           msg='\n'.join([self.serial.lower(), date, request.body.decode('utf8')]).encode('utf8'),
+                           msg='\n'.join([self.serial.lower(), date, request.body]).encode('utf8'),
                            digestmod=hashlib.sha256)
 
         request.headers['Date'] = date

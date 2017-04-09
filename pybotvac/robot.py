@@ -107,8 +107,15 @@ class Auth(requests.auth.AuthBase):
     def __call__(self, request):
         date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
 
+        try:
+            # Attempt to decode request.body (assume bytes received)
+            msg = '\n'.join([self.serial.lower(), date, request.body.decode('utf8')])
+        except AttributeError:
+            # Decode failed, assume request.body is already type str
+            msg = '\n'.join([self.serial.lower(), date, request.body])
+
         signing = hmac.new(key=self.secret.encode('utf8'),
-                           msg='\n'.join([self.serial.lower(), date, request.body]).encode('utf8'),
+                           msg=msg.encode('utf8'),
                            digestmod=hashlib.sha256)
 
         request.headers['Date'] = date

@@ -2,7 +2,6 @@
 
 import binascii
 import os
-import shutil
 import urllib.parse
 import requests
 
@@ -70,10 +69,24 @@ class Account:
 
         :return:
         """
-        if not self._maps:
-            self.refresh_robots()
+        self.refresh_maps()
 
         return self._maps
+
+    def refresh_maps(self):
+        """
+        Get information about maps of the robots.
+
+        :return:
+        """
+        for robot in self._robots:
+            resp2 = (
+                requests.get(urllib.parse.urljoin(self.ENDPOINT,
+                                                  'users/me/robots/{}/maps'
+                                                  .format(robot.serial)),
+                             headers=self._headers))
+            resp2.raise_for_status()
+            self._maps = {robot.serial: resp2.json()}
 
     def refresh_robots(self):
         """
@@ -90,26 +103,14 @@ class Account:
                                    serial=robot['serial'],
                                    secret=robot['secret_key'],
                                    traits=robot['traits']))
-            resp2 = (
-                requests.get(urllib.parse.urljoin(self.ENDPOINT,
-                                                  'users/me/robots/{}/maps'
-                                                  .format(robot['serial'])),
-                             headers=self._headers))
-            resp2.raise_for_status()
-            self._maps = {robot['serial']: resp2.json()}
 
     @staticmethod
-    def get_map_image(url, dest_path):
+    def get_map_image(url):
         """
         Return a requested map from a robot.
 
         :return:
         """
-        image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
-        image_filename = image_url.split('?')[0]
-        dest = os.path.join(dest_path, image_filename)
-        response = requests.get(url, stream=True)
-        response.raise_for_status()
-        with open((dest), 'wb') as data:
-            response.raw.decode_content = True
-            shutil.copyfileobj(response.raw, data)
+        image = requests.get(url, stream=True, timeout=10)
+
+        return image.raw

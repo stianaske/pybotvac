@@ -6,7 +6,7 @@ with open('LICENSE') as f:
 
 setup(
     name='pybotvac',
-    version='0.0.2',
+    version='0.0.3',
     description='Python package for controlling Neato pybotvac Connected vacuum robot',
     author='Stian Askeland',
     author_email='stianaske@gmail.com',

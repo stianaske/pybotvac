@@ -27,6 +27,8 @@ class Robot:
 
         self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{0}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
+        self._commands = []
+        self._parse_state(self.get_robot_state().json())
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -47,27 +49,45 @@ class Robot:
         response.raise_for_status()
         return response
 
+    def _parse_state(self, state):
+        self._commands = state["availableCommands"]
+        self._navigation_mode = state["cleaning"]["navigationMode"]
+        self._mode = state["cleaning"]["mode"]
+        self._category = state["cleaning"]["category"]
+        self._modifier = state["cleaning"]["modifier"]
+
     def start_cleaning(self):
         json = {'reqId': "1",
                 'cmd': "startCleaning",
                 'params': {
-                    'category': 2,
-                    'mode': 2,
-                    'modifier': 2}
+                    'category': self._category,
+                    'mode': self._mode,
+                    'navigationMode': self._navigation_mode,
+                    'modifier': self._modifier}
                 }
-        return self._message(json)
+        state = self._message(json)
+        self._commands = state.json()["availableCommands"]
+        return state
 
     def pause_cleaning(self):
-        return self._message({'reqId': "1", 'cmd': "pauseCleaning"})
+        state = self._message({'reqId': "1", 'cmd': "pauseCleaning"})
+        self._commands = state.json()["availableCommands"]
+        return state
 
     def resume_cleaning(self):
-        return self._message({'reqId': "1", 'cmd': "resumeCleaning"})
+        state = self._message({'reqId': "1", 'cmd': "resumeCleaning"})
+        self._commands = state.json()["availableCommands"]
+        return state
 
     def stop_cleaning(self):
-        return self._message({'reqId': "1", 'cmd': "stopCleaning"})
+        state = self._message({'reqId': "1", 'cmd': "stopCleaning"})
+        self._commands = state.json()["availableCommands"]
+        return state
 
     def send_to_base(self):
-        return self._message({'reqId': "1", 'cmd': "sendToBase"})
+        state = self._message({'reqId': "1", 'cmd': "sendToBase"})
+        self._commands = state.json()["availableCommands"]
+        return state
 
     def get_robot_state(self):
         return self._message({'reqId': "1", 'cmd': "getRobotState"})
@@ -96,6 +116,9 @@ class Robot:
     def state(self):
         return self.get_robot_state().json()
 
+    @property
+    def available_commands(self):
+        return self._commands
 
 class Auth(requests.auth.AuthBase):
     """Create headers for request authentication"""

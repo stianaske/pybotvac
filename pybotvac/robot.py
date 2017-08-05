@@ -49,7 +49,10 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self):
+    def start_cleaning(self, mode=2, navigationMode=2):
+        # mode & naivigationMode used if applicable to service version
+        # mode: 1 eco, 2 turbo
+        # navigationMode: 1 normal, 2 extra care
         serviceVersion = self.availableServices['houseCleaning']
         
         if serviceVersion == 'basic-1':
@@ -57,24 +60,24 @@ class Robot:
                     'cmd': "startCleaning",
                     'params': {
                         'category': 2,
-                        'mode': 2,
-                        'modifier': 2}
+                        'mode': mode,
+                        'modifier': 1}
                     }
         elif serviceVersion == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
                         'category': 2,
-                        "navigationMode": 2}
+                        "navigationMode": navigationMode}
                     }
         elif serviceVersion == 'basic-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
                         'category': 2,
-                        'mode': 2,
-                        'modifier': 2,
-                        "navigationMode": 2}
+                        'mode': mode,
+                        'modifier': 1,
+                        "navigationMode": navigationMode}
                     }
         else:
             raise Exception("Version " + serviceVersion + " of service houseCleaning is not known")

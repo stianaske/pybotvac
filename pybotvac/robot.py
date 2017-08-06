@@ -7,6 +7,12 @@ import os.path
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
 
+SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2']
+
+
+class UnsupportedDevice(Exception):
+    pass
+
 
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
@@ -28,6 +34,9 @@ class Robot:
         self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{0}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
+        if self.service_version not in SUPPORTED_SERVICES:
+            raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
+
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
 
@@ -47,14 +56,36 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self):
-        json = {'reqId': "1",
-                'cmd': "startCleaning",
-                'params': {
-                    'category': 2,
-                    'mode': 2,
-                    'modifier': 2}
-                }
+    def start_cleaning(self, mode=2, navigation_mode=2):
+        # mode & naivigation_mode used if applicable to service version
+        # mode: 1 eco, 2 turbo
+        # navigation_mode: 1 normal, 2 extra care
+        
+        if self.service_version == 'basic-1':
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 2,
+                        'mode': mode,
+                        'modifier': 1}
+                    }
+        elif self.service_version == 'minimal-2':
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 2,
+                        "navigationMode": navigation_mode}
+                    }
+        else:   # self.service_version == 'basic-2'
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 2,
+                        'mode': mode,
+                        'modifier': 1,
+                        "navigationMode": navigation_mode}
+                    }
+        
         return self._message(json)
 
     def pause_cleaning(self):
@@ -95,6 +126,14 @@ class Robot:
     @property
     def state(self):
         return self.get_robot_state().json()
+
+    @property
+    def available_services(self):
+        return self.state['availableServices']
+
+    @property
+    def service_version(self):
+        return self.available_services['houseCleaning']
 
 
 class Auth(requests.auth.AuthBase):

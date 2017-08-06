@@ -6,6 +6,12 @@ import os.path
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
 
+SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2']
+
+
+class UnsupportedDevice(Exception):
+    pass
+
 
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
@@ -26,8 +32,9 @@ class Robot:
 
         self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
-        
-        self.availableServices = self.state['availableServices']
+
+        if self.service_version not in SUPPORTED_SERVICES:
+            raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -48,13 +55,12 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigationMode=2):
-        # mode & naivigationMode used if applicable to service version
+    def start_cleaning(self, mode=2, navigation_mode=2):
+        # mode & naivigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
-        # navigationMode: 1 normal, 2 extra care
-        serviceVersion = self.availableServices['houseCleaning']
+        # navigation_mode: 1 normal, 2 extra care
         
-        if serviceVersion == 'basic-1':
+        if self.service_version == 'basic-1':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
@@ -62,49 +68,35 @@ class Robot:
                         'mode': mode,
                         'modifier': 1}
                     }
-        elif serviceVersion == 'minimal-2':
+        elif self.service_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
                         'category': 2,
-                        "navigationMode": navigationMode}
+                        "navigationMode": navigation_mode}
                     }
-        elif serviceVersion == 'basic-2':
+        else:   # self.service_version == 'basic-2'
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
                         'category': 2,
                         'mode': mode,
                         'modifier': 1,
-                        "navigationMode": navigationMode}
+                        "navigationMode": navigation_mode}
                     }
-        else:
-            raise Exception("Version " + serviceVersion + " of service houseCleaning is not known")
         
         return self._message(json)
 
     def pause_cleaning(self):
-        serviceVersion = self.availableServices['houseCleaning']
-        if serviceVersion not in ['basic-1', 'minimal-2', 'basic-2']:
-            raise Exception("Version " + serviceVersion + " of service houseCleaning is not known")
         return self._message({'reqId': "1", 'cmd': "pauseCleaning"})
 
     def resume_cleaning(self):
-        serviceVersion = self.availableServices['houseCleaning']
-        if serviceVersion not in ['basic-1', 'minimal-2', 'basic-2']:
-            raise Exception("Version " + serviceVersion + " of service houseCleaning is not known")
         return self._message({'reqId': "1", 'cmd': "resumeCleaning"})
 
     def stop_cleaning(self):
-        serviceVersion = self.availableServices['houseCleaning']
-        if serviceVersion not in ['basic-1', 'minimal-2', 'basic-2']:
-            raise Exception("Version " + serviceVersion + " of service houseCleaning is not known")
         return self._message({'reqId': "1", 'cmd': "stopCleaning"})
 
     def send_to_base(self):
-        serviceVersion = self.availableServices['houseCleaning']
-        if serviceVersion not in ['basic-1', 'minimal-2', 'basic-2']:
-            raise Exception("Version " + serviceVersion + " of service houseCleaning is not known")
         return self._message({'reqId': "1", 'cmd': "sendToBase"})
 
     def get_robot_state(self):
@@ -133,6 +125,14 @@ class Robot:
     @property
     def state(self):
         return self.get_robot_state().json()
+
+    @property
+    def available_services(self):
+        return self.state['availableServices']
+
+    @property
+    def service_version(self):
+        return self.available_services['houseCleaning']
 
 
 class Auth(requests.auth.AuthBase):

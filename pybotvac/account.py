@@ -86,7 +86,7 @@ class Account:
                                                   .format(robot.serial)),
                              headers=self._headers))
             resp2.raise_for_status()
-            self._maps = {robot.serial: resp2.json()}
+            self._maps.update({robot.serial: resp2.json()})
 
     def refresh_robots(self):
         """

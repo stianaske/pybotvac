@@ -96,7 +96,7 @@ class Account:
                                      'users/me/robots/{0}/maps'.format(robot['serial'])),
                              headers=self._headers))
             resp2.raise_for_status()
-            self._maps = {robot['serial']: resp2.json()}
+            self._maps.update({robot['serial']: resp2.json()})
 
     @staticmethod
     def get_map_image(url, dest_path):

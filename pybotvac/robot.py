@@ -1,4 +1,5 @@
 import requests
+import hashlib
 import hmac
 import time
 import os.path
@@ -30,7 +31,7 @@ class Robot:
         self.secret = secret
         self.traits = traits
 
-        self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{}/messages'.format(self.serial)
+        self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{0}/messages'.format(self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:
@@ -143,11 +144,18 @@ class Auth(requests.auth.AuthBase):
         self.secret = secret
 
     def __call__(self, request):
-        date = time.strftime('%a, %d %h %Y %H:%M:%S', time.gmtime()) + ' GMT'
+        date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
+
+        try:
+            # Attempt to decode request.body (assume bytes received)
+            msg = '\n'.join([self.serial.lower(), date, request.body.decode('utf8')])
+        except AttributeError:
+            # Decode failed, assume request.body is already type str
+            msg = '\n'.join([self.serial.lower(), date, request.body])
 
         signing = hmac.new(key=self.secret.encode('utf8'),
-                           msg='\n'.join([self.serial.lower(), date, request.body.decode('utf8')]).encode('utf8'),
-                           digestmod='sha256')
+                           msg=msg.encode('utf8'),
+                           digestmod=hashlib.sha256)
 
         request.headers['Date'] = date
         request.headers['Authorization'] = "NEATOAPP " + signing.hexdigest()

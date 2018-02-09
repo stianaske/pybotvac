@@ -3,8 +3,13 @@
 import binascii
 import os
 import urllib.parse
+import shutil
 import requests
 
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
 from .robot import Robot
 
@@ -36,14 +41,12 @@ class Account:
         :param password: Password for pybotvac account
         :return:
         """
-        response = (
-            requests.post(urllib.parse.urljoin(self.ENDPOINT, 'sessions'),
-                          json={'email': email,
-                                'password': password,
-                                'platform': 'ios',
-                                'token': binascii.hexlify(os.urandom(64))
-                                         .decode('utf8')},
-                          headers=self._headers))
+        response = requests.post(urljoin(self.ENDPOINT, 'sessions'),
+                             json={'email': email,
+                                   'password': password,
+                                   'platform': 'ios',
+                                   'token': binascii.hexlify(os.urandom(64)).decode('utf8')},
+                             headers=self._headers)
 
         response.raise_for_status()
         access_token = response.json()['access_token']
@@ -94,7 +97,7 @@ class Account:
 
         :return:
         """
-        resp = requests.get(urllib.parse.urljoin(self.ENDPOINT, 'dashboard'),
+        resp = requests.get(urljoin(self.ENDPOINT, 'dashboard'),
                             headers=self._headers)
         resp.raise_for_status()
 
@@ -105,12 +108,22 @@ class Account:
                                    traits=robot['traits']))
 
     @staticmethod
-    def get_map_image(url):
+    def get_map_image(url, dest_path=None):
         """
         Return a requested map from a robot.
 
         :return:
         """
         image = requests.get(url, stream=True, timeout=10)
+
+        if dest_path:
+            image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
+            image_filename = image_url.split('?')[0]
+            dest = os.path.join(dest_path, image_filename)
+            response = requests.get(url, stream=True)
+            response.raise_for_status()
+            with open(dest, 'wb') as data:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, data)
 
         return image.raw

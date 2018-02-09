@@ -1,4 +1,9 @@
+import sys
+
 from pybotvac import Account
+
+if sys.version_info[0] < 3:
+    input = raw_input
 
 email = input('Enter email\n')
 password = input('Enter password\n')

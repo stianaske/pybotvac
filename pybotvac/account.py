@@ -120,10 +120,9 @@ class Account:
             image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
             image_filename = image_url.split('?')[0]
             dest = os.path.join(dest_path, image_filename)
-            response = requests.get(url, stream=True)
-            response.raise_for_status()
+            image.raise_for_status()
             with open(dest, 'wb') as data:
-                response.raw.decode_content = True
-                shutil.copyfileobj(response.raw, data)
+                image.raw.decode_content = True
+                shutil.copyfileobj(image.raw, data)
 
         return image.raw

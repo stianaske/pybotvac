@@ -69,10 +69,11 @@ Information about maps and download of maps can be done from the Account class:
     >>> for map_info in Account('sample@email.com', 'sample_password').maps:
         print(map_info)
 
-A cleaning map can be downloaded with the account class. Example shows latest map. You need the url from the map output to do that:
+A cleaning map can be downloaded with the account class. Returns the raw image response. Example shows latest map.
+ You need the url from the map output to do that:
 
     >>> from pybotvac import Account
     >>> # List all maps associated with a specific robot
     >>> map = Account('sample@email.com', 'sample_password').maps
     >>> download_link = map['robot_serial']['maps'][0]['url']
-        Account('sample@email.com', 'sample_password').get_map_image('download_link', 'destination_path')
+        Account('sample@email.com', 'sample_password').get_map_image('download_link')

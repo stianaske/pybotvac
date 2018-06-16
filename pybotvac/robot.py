@@ -7,7 +7,7 @@ import os.path
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
 
-SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2']
+SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3']
 
 
 class UnsupportedDevice(Exception):

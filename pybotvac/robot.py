@@ -56,10 +56,10 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=2):
+    def start_cleaning(self, mode=2, navigation_mode=1):
         # mode & naivigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
-        # navigation_mode: 1 normal, 2 extra care
+        # navigation_mode: 1 normal, 2 extra care, 3 deep
         
         if self.service_version == 'basic-1':
             json = {'reqId': "1",

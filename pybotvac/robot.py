@@ -7,7 +7,7 @@ import os.path
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
 
-SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2']
+SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3']
 
 
 class UnsupportedDevice(Exception):
@@ -56,11 +56,16 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=2):
+    def start_cleaning(self, mode=2, navigation_mode=2, category=None):
         # mode & naivigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care
-        
+        # category: 2 non-persistent map, 4 persistent map
+
+        #Default to using the persistent map if we support basic-3.
+        if category is None:
+            category = 4 if self.service_version == 'basic-3' else 2
+
         if self.service_version == 'basic-1':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
@@ -76,6 +81,15 @@ class Robot:
                         'category': 2,
                         "navigationMode": navigation_mode}
                     }
+        elif self.service_version == 'basic-3':
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': category,
+                        'mode': mode,
+                        'modifier': 1,
+                        "navigationMode": navigation_mode}
+                    }
         else:   # self.service_version == 'basic-2'
             json = {'reqId': "1",
                     'cmd': "startCleaning",
@@ -85,7 +99,7 @@ class Robot:
                         'modifier': 1,
                         "navigationMode": navigation_mode}
                     }
-        
+
         return self._message(json)
 
     def pause_cleaning(self):

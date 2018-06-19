@@ -64,7 +64,7 @@ class Robot:
 
         #Default to using the persistent map if we support basic-3.
         if category is None:
-            category = 3 if self.service_version == 'basic-3' else 2
+            category = 4 if self.service_version == 'basic-3' else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",

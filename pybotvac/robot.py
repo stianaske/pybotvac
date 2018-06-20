@@ -78,7 +78,7 @@ class Robot:
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': category,
+                        'category': 2,
                         'mode': mode,
                         'modifier': 1,
                         "navigationMode": navigation_mode}

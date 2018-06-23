@@ -8,7 +8,11 @@ The code is based on https://github.com/kangguru/botvac and credit for reverse e
 This API is experimental. Use at your own risk. Feel free to contribute if things are not working.
 
 ## Installation
-Install by running setup.py
+Install using pip
+
+    pip install pybotvac
+
+Alternatively, clone the repository and run
 
     python setup.py install
 

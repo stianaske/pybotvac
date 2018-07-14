@@ -125,6 +125,9 @@ class Robot:
 
     def get_schedule(self):
         return self._message({'reqId': "1", 'cmd': "getSchedule"})
+    
+    def locate(self):
+        return self._message({'reqId': "1", 'cmd': "findMe"})
 
     @property
     def schedule_enabled(self):

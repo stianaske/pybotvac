@@ -105,7 +105,8 @@ class Account:
             self._robots.add(Robot(name=robot['name'],
                                    serial=robot['serial'],
                                    secret=robot['secret_key'],
-                                   traits=robot['traits']))
+                                   traits=robot['traits'],
+                                   endpoint=robot['nucleo_url']))
 
     @staticmethod
     def get_map_image(url, dest_path=None):

@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import time
 import os.path
+import re
 
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
@@ -17,7 +18,8 @@ class UnsupportedDevice(Exception):
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, name=''):
+    def __init__(self, serial, secret, traits, name='',
+                 endpoint='https://nucleo.neatocloud.com:4443'):
         """
         Initialize robot
 
@@ -31,7 +33,9 @@ class Robot:
         self.secret = secret
         self.traits = traits
 
-        self._url = 'https://nucleo.neatocloud.com/vendors/neato/robots/{0}/messages'.format(self.serial)
+        self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
+            endpoint=re.sub(':\d+', '', endpoint),
+            serial=self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:

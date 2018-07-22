@@ -34,7 +34,7 @@ class Robot:
         self.traits = traits
 
         self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
-            endpoint=re.sub(':\d+', '', endpoint),
+            endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
             serial=self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 

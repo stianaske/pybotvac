@@ -74,7 +74,7 @@ class Robot:
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1}
                     }
@@ -82,7 +82,7 @@ class Robot:
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1,
                         "navigationMode": navigation_mode}
@@ -91,14 +91,14 @@ class Robot:
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         "navigationMode": navigation_mode}
                     }
         else:   # self.service_version == 'basic-2'
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1,
                         "navigationMode": navigation_mode}

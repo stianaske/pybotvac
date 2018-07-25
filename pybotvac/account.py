@@ -102,11 +102,12 @@ class Account:
         resp.raise_for_status()
 
         for robot in resp.json()['robots']:
-            self._robots.add(Robot(name=robot['name'],
-                                   serial=robot['serial'],
-                                   secret=robot['secret_key'],
-                                   traits=robot['traits'],
-                                   endpoint=robot['nucleo_url']))
+            if robot['mac_address'] != None:
+                self._robots.add(Robot(name=robot['name'],
+                                       serial=robot['serial'],
+                                       secret=robot['secret_key'],
+                                       traits=robot['traits'],
+                                       endpoint=robot['nucleo_url']))
 
     @staticmethod
     def get_map_image(url, dest_path=None):

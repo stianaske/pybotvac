@@ -102,6 +102,9 @@ class Account:
         resp.raise_for_status()
 
         for robot in resp.json()['robots']:
+            if robot['mac_address'] is None:
+                continue    # Ignore robots without mac-address
+
             self._robots.add(Robot(name=robot['name'],
                                    serial=robot['serial'],
                                    secret=robot['secret_key'],

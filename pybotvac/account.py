@@ -82,7 +82,7 @@ class Account:
 
         :return:
         """
-        for robot in self._robots:
+        for robot in self.robots:
             resp2 = (
                 requests.get(urllib.parse.urljoin(self.ENDPOINT,
                                                   'users/me/robots/{}/maps'

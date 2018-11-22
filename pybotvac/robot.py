@@ -132,6 +132,21 @@ class Robot:
     
     def locate(self):
         return self._message({'reqId': "1", 'cmd': "findMe"})
+    
+    def get_general_info(self):
+        return self._message({'reqId': "1", 'cmd': "getGeneralInfo"})
+    
+    def get_local_stats(self):
+        return self._message({'reqId': "1", 'cmd': "getLocalStats"})
+    
+    def get_preferences(self):
+        return self._message({'reqId': "1", 'cmd': "getPreferences"})
+    
+    def get_map_boundaries(self):
+        return self._message({'reqId': "1", 'cmd': "getMapBoundaries"})
+    
+    def get_robot_info(self):
+        return self._message({'reqId': "1", 'cmd': "getRobotInfo"})
 
     @property
     def schedule_enabled(self):

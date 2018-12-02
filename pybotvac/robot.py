@@ -69,7 +69,7 @@ class Robot:
         #Default to using the persistent map if we support basic-3.
         if category is None:
             category = 4 if self.service_version == 'basic-3' else 2
-        
+
         if self.service_version == 'basic-1':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
@@ -103,7 +103,48 @@ class Robot:
                         'modifier': 1,
                         "navigationMode": navigation_mode}
                     }
+
+        return self._message(json)
         
+    def start_spot_cleaning(self, spot_width=400, spot_height=400):
+        # Spot cleaning if applicable to version
+        # spot_width: spot width in cm
+        # spot_height: spot height in cm
+
+        if self.service_version == 'basic-1':
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 3,
+                        'mode': 1,
+                        'modifier': 1,
+                        'spotWidth': spot_width,
+                        'spotHeight': spot_height}
+                    }
+        elif self.service_version == 'basic-3':
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 3,
+                        'spotWidth': spot_width,
+                        'spotHeight': spot_height}
+                    }
+        elif self.service_version == 'minimal-2':
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 3,
+                        'modifier': 1,
+                        "navigationMode": 1}
+                    }
+        else:   # self.service_version == 'micro-2'
+            json = {'reqId': "1",
+                    'cmd': "startCleaning",
+                    'params': {
+                        'category': 3,
+                        "navigationMode": 1}
+                    }
+
         return self._message(json)
 
     def pause_cleaning(self):
@@ -129,7 +170,7 @@ class Robot:
 
     def get_schedule(self):
         return self._message({'reqId': "1", 'cmd': "getSchedule"})
-    
+
     def locate(self):
         return self._message({'reqId': "1", 'cmd': "findMe"})
 

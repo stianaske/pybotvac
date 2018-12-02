@@ -38,6 +38,7 @@ Currently the following methods are available in the Robot class:
 
 * get_robot_state()
 * start_cleaning()
+* start_spot_cleaning()
 * pause_cleaning()
 * stop_cleaning()
 * send_to_base()

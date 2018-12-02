@@ -2,7 +2,6 @@
 
 import binascii
 import os
-import urllib.parse
 import shutil
 import requests
 

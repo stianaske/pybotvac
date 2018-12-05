@@ -78,7 +78,7 @@ class Robot:
                         'mode': mode,
                         'modifier': 1}
                     }
-        elif self.service_version == 'basic-3':
+        elif self.service_version == 'basic-3' or 'basic-4':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {

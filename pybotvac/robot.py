@@ -104,14 +104,15 @@ class Robot:
                         "navigationMode": navigation_mode}
                     }
 
-        try:
+        response = self._message(json)
+        response_dict = response.json()
+
+        # Fall back to category 2 if we tried and failed with category 4
+        if category == 4 and 'alert' in response_dict and response_dict['alert'] == 'nav_floorplan_load_fail':
+            json['params']['category'] = 2
             return self._message(json)
-        except Exception:
-            # Todo: catch specific exception that is causing this
-            # Fall back to category 2 if we tried and failed with category 4
-            if category == 4:
-                json['params']['category'] = 2
-                return self._message(json)
+
+        return response
         
     def start_spot_cleaning(self, spot_width=400, spot_height=400):
         # Spot cleaning if applicable to version

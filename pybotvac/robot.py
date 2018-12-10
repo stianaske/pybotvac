@@ -66,9 +66,9 @@ class Robot:
         # navigation_mode: 1 normal, 2 extra care, 3 deep
         # category: 2 non-persistent map, 4 persistent map
 
-        #Default to using the persistent map if we support basic-3.
+        # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
-            category = 4 if self.service_version == 'basic-3' else 2
+            category = 4 if self.service_version in ['basic-3', 'basic-4'] else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",

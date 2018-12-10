@@ -104,7 +104,14 @@ class Robot:
                         "navigationMode": navigation_mode}
                     }
 
-        return self._message(json)
+        try:
+            return self._message(json)
+        except Exception:
+            # Todo: catch specific exception that is causing this
+            # Fall back to category 2 if we tried and failed with category 4
+            if category == 4:
+                json['params']['category'] = 2
+                return self._message(json)
         
     def start_spot_cleaning(self, spot_width=400, spot_height=400):
         # Spot cleaning if applicable to version

@@ -62,11 +62,12 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=1, category=None):
-        # mode & naivigation_mode used if applicable to service version
+    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None):
+        # mode & navigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care, 3 deep
         # category: 2 non-persistent map, 4 persistent map
+        # boundary_id: the id of the zone to clean
 
         #Default to using the persistent map if we support basic-3.
         if category is None:
@@ -89,6 +90,8 @@ class Robot:
                         'modifier': 1,
                         "navigationMode": navigation_mode}
                     }
+            if boundary_id:
+                json['params']['boundaryId'] = boundary_id
         elif self.service_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",

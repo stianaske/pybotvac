@@ -19,7 +19,8 @@ class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
     def __init__(self, serial, secret, traits, name='',
-                 endpoint='https://nucleo.neatocloud.com:4443'):
+                 endpoint='https://nucleo.neatocloud.com:4443',
+                 has_persistent_maps=False):
         """
         Initialize robot
 
@@ -32,6 +33,7 @@ class Robot:
         self.serial = serial
         self.secret = secret
         self.traits = traits
+        self.has_persistent_maps = has_persistent_maps
 
         self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
             endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
@@ -68,7 +70,7 @@ class Robot:
 
         # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
-            category = 4 if self.service_version in ['basic-3', 'basic-4'] else 2
+            category = 4 if self.service_version in ['basic-3', 'basic-4'] and self.has_persistent_maps else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",

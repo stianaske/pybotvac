@@ -196,8 +196,8 @@ class Robot:
     def get_preferences(self):
         return self._message({'reqId': "1", 'cmd': "getPreferences"})
     
-    def get_map_boundaries(self, mapId=None):
-        return self._message({'reqId': "1", 'cmd': "getMapBoundaries", 'params': {'mapId': mapId}})
+    def get_map_boundaries(self, map_id=None):
+        return self._message({'reqId': "1", 'cmd': "getMapBoundaries", 'params': {'mapId': map_id}})
     
     def get_robot_info(self):
         return self._message({'reqId': "1", 'cmd': "getRobotInfo"})

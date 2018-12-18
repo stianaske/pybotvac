@@ -5,6 +5,8 @@ import time
 import os.path
 import re
 
+from pybotvac import account
+
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
 
@@ -18,7 +20,7 @@ class UnsupportedDevice(Exception):
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, name='',
+    def __init__(self, serial, secret, traits, access_token, name='',
                  endpoint='https://nucleo.neatocloud.com:4443'):
         """
         Initialize robot
@@ -32,14 +34,21 @@ class Robot:
         self.serial = serial
         self.secret = secret
         self.traits = traits
+        self.access_token = access_token
 
         self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
             endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
             serial=self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
+        self._account_headers = dict(**self._headers)
+        self._account_headers['Authorization'] = 'Token token=%s' % self.access_token
 
         if self.service_version not in SUPPORTED_SERVICES:
             raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
+
+        self._persistent_maps = {}
+        if self.service_version in ['basic-3', 'basic-4']:
+            self.refresh_persistent_maps
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -60,15 +69,16 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=1, category=None):
-        # mode & naivigation_mode used if applicable to service version
+    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None):
+        # mode & navigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care, 3 deep
         # category: 2 non-persistent map, 4 persistent map
+        # boundary_id: the id of the zone to clean
 
         #Default to using the persistent map if we support basic-3.
         if category is None:
-            category = 4 if self.service_version == 'basic-3' else 2
+            category = 4 if self.service_version in ['basic-3', 'basic-4'] and self._persistent_maps else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",
@@ -82,11 +92,13 @@ class Robot:
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1,
                         "navigationMode": navigation_mode}
                     }
+            if boundary_id:
+                json['params']['boundaryId'] = boundary_id
         elif self.service_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
@@ -211,6 +223,21 @@ class Robot:
     @property
     def service_version(self):
         return self.available_services['houseCleaning']
+
+    @property
+    def persistent_maps(self):
+        self.refresh_persistent_maps()
+
+        return self._persistent_maps
+
+    def refresh_persistent_maps(self):
+        resp2 = (requests.get(account.urljoin(
+                account.Account.ENDPOINT,
+                'users/me/robots/{}/persistent_maps'.format(self.serial)),
+                                  headers=self._account_headers))
+        resp2.raise_for_status()
+        for persistent_map in resp2.json():
+            self._persistent_maps[persistent_map.pop('id')] = persistent_map
 
 
 class Auth(requests.auth.AuthBase):

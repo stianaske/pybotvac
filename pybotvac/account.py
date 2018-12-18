@@ -31,6 +31,7 @@ class Account:
         self._maps = {}
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
         self._login(email, password)
+        self._persistent_maps = {}
 
     def _login(self, email, password):
         """
@@ -50,7 +51,8 @@ class Account:
         response.raise_for_status()
         access_token = response.json()['access_token']
 
-        self._headers['Authorization'] = 'Token token=%s' % access_token
+        self.access_token = access_token
+        self._headers['Authorization'] = 'Token token=%s' % self.access_token
 
     @property
     def robots(self):
@@ -106,7 +108,8 @@ class Account:
                                    serial=robot['serial'],
                                    secret=robot['secret_key'],
                                    traits=robot['traits'],
-                                   endpoint=robot['nucleo_url']))
+                                   endpoint=robot['nucleo_url'],
+                                   access_token=self.access_token,))
 
     @staticmethod
     def get_map_image(url, dest_path=None):
@@ -127,3 +130,12 @@ class Account:
                 shutil.copyfileobj(image.raw, data)
 
         return image.raw
+
+    @property
+    def persistent_maps(self):
+        """
+        Return set of persistent maps for logged in account.
+
+        :return:
+        """
+        return {robot.serial:robot.persistent_maps for robot in self.robots}

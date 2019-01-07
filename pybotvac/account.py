@@ -31,6 +31,7 @@ class Account:
         self._maps = {}
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
         self._login(email, password)
+        self._persistent_maps = {}
 
     def _login(self, email, password):
         """
@@ -41,11 +42,11 @@ class Account:
         :return:
         """
         response = requests.post(urljoin(self.ENDPOINT, 'sessions'),
-                             json={'email': email,
-                                   'password': password,
-                                   'platform': 'ios',
-                                   'token': binascii.hexlify(os.urandom(64)).decode('utf8')},
-                             headers=self._headers)
+                                 json={'email': email,
+                                       'password': password,
+                                       'platform': 'ios',
+                                       'token': binascii.hexlify(os.urandom(64)).decode('utf8')},
+                                 headers=self._headers)
 
         response.raise_for_status()
         access_token = response.json()['access_token']
@@ -108,6 +109,10 @@ class Account:
                                    traits=robot['traits'],
                                    endpoint=robot['nucleo_url']))
 
+        self.refresh_persistent_maps()
+        for robot in self._robots:
+            robot.has_persistent_maps = robot.serial in self._persistent_maps
+
     @staticmethod
     def get_map_image(url, dest_path=None):
         """
@@ -127,3 +132,28 @@ class Account:
                 shutil.copyfileobj(image.raw, data)
 
         return image.raw
+
+    @property
+    def persistent_maps(self):
+        """
+        Return set of persistent maps for logged in account.
+
+        :return:
+        """
+        self.refresh_persistent_maps()
+
+        return self._persistent_maps
+
+    def refresh_persistent_maps(self):
+        """
+        Get information about persistent maps of the robots.
+
+        :return:
+        """
+        for robot in self._robots:
+            resp2 = (requests.get(urljoin(
+                self.ENDPOINT,
+                'users/me/robots/{}/persistent_maps'.format(robot.serial)),
+                                  headers=self._headers))
+            resp2.raise_for_status()
+            self._persistent_maps.update({robot.serial: resp2.json()})

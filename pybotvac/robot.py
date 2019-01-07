@@ -19,7 +19,8 @@ class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
     def __init__(self, serial, secret, traits, name='',
-                 endpoint='https://nucleo.neatocloud.com:4443'):
+                 endpoint='https://nucleo.neatocloud.com:4443',
+                 has_persistent_maps=False):
         """
         Initialize robot
 
@@ -32,6 +33,7 @@ class Robot:
         self.serial = serial
         self.secret = secret
         self.traits = traits
+        self.has_persistent_maps = has_persistent_maps
 
         self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
             endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
@@ -60,21 +62,22 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=1, category=None):
-        # mode & naivigation_mode used if applicable to service version
+    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None):
+        # mode & navigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care, 3 deep
         # category: 2 non-persistent map, 4 persistent map
+        # boundary_id: the id of the zone to clean
 
-        #Default to using the persistent map if we support basic-3.
+        # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
-            category = 4 if self.service_version == 'basic-3' else 2
+            category = 4 if self.service_version in ['basic-3', 'basic-4'] and self.has_persistent_maps else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1}
                     }
@@ -82,29 +85,39 @@ class Robot:
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1,
                         "navigationMode": navigation_mode}
                     }
+            if boundary_id:
+                json['params']['boundaryId'] = boundary_id
         elif self.service_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         "navigationMode": navigation_mode}
                     }
         else:   # self.service_version == 'basic-2'
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
-                        'category': 2,
+                        'category': category,
                         'mode': mode,
                         'modifier': 1,
                         "navigationMode": navigation_mode}
                     }
 
-        return self._message(json)
+        response = self._message(json)
+        response_dict = response.json()
+
+        # Fall back to category 2 if we tried and failed with category 4
+        if category == 4 and 'alert' in response_dict and response_dict['alert'] == 'nav_floorplan_load_fail':
+            json['params']['category'] = 2
+            return self._message(json)
+
+        return response
         
     def start_spot_cleaning(self, spot_width=400, spot_height=400):
         # Spot cleaning if applicable to version
@@ -183,8 +196,8 @@ class Robot:
     def get_preferences(self):
         return self._message({'reqId': "1", 'cmd': "getPreferences"})
     
-    def get_map_boundaries(self):
-        return self._message({'reqId': "1", 'cmd': "getMapBoundaries"})
+    def get_map_boundaries(self, map_id=None):
+        return self._message({'reqId': "1", 'cmd': "getMapBoundaries", 'params': {'mapId': map_id}})
     
     def get_robot_info(self):
         return self._message({'reqId': "1", 'cmd': "getRobotInfo"})

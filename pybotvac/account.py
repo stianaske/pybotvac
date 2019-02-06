@@ -110,7 +110,7 @@ class Account:
                                        traits=robot['traits'],
                                        endpoint=robot['nucleo_url']))
             except requests.exceptions.HTTPError:
-                print ("Your '%s' robot is offline.", robot['name'])
+                print ("Your '{}' robot is offline.".format(robot['name']))
                 continue
 
         self.refresh_persistent_maps()

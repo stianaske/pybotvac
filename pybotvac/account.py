@@ -103,11 +103,15 @@ class Account:
             if robot['mac_address'] is None:
                 continue    # Ignore robots without mac-address
 
-            self._robots.add(Robot(name=robot['name'],
-                                   serial=robot['serial'],
-                                   secret=robot['secret_key'],
-                                   traits=robot['traits'],
-                                   endpoint=robot['nucleo_url']))
+            try:
+                self._robots.add(Robot(name=robot['name'],
+                                       serial=robot['serial'],
+                                       secret=robot['secret_key'],
+                                       traits=robot['traits'],
+                                       endpoint=robot['nucleo_url']))
+            except requests.exceptions.HTTPError:
+                print ("Your '{}' robot is offline.".format(robot['name']))
+                continue
 
         self.refresh_persistent_maps()
         for robot in self._robots:
@@ -154,6 +158,6 @@ class Account:
             resp2 = (requests.get(urljoin(
                 self.ENDPOINT,
                 'users/me/robots/{}/persistent_maps'.format(robot.serial)),
-                                  headers=self._headers))
+                headers=self._headers))
             resp2.raise_for_status()
             self._persistent_maps.update({robot.serial: resp2.json()})

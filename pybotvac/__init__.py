@@ -1,4 +1,3 @@
 from .account import Account
 from .robot import Robot
-
-__version__ = '0.0.13'
+from .version import __version__

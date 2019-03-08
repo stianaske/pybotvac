@@ -62,7 +62,7 @@ class Robot:
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None):
+    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None, map_id=None):
         # mode & navigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care, 3 deep
@@ -92,6 +92,8 @@ class Robot:
                     }
             if boundary_id:
                 json['params']['boundaryId'] = boundary_id
+            if map_id:
+                json['params']['mapId'] = map_id
         elif self.service_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",

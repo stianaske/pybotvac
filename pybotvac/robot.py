@@ -68,6 +68,7 @@ class Robot:
         # navigation_mode: 1 normal, 2 extra care, 3 deep
         # category: 2 non-persistent map, 4 persistent map
         # boundary_id: the id of the zone to clean
+        # map_id: the id of the map to clean
 
         # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:

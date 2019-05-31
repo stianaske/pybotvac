@@ -18,7 +18,7 @@ class UnsupportedDevice(Exception):
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, name='',
+    def __init__(self, serial, secret, traits, vendor, name='',
                  endpoint='https://nucleo.neatocloud.com:4443',
                  has_persistent_maps=False):
         """
@@ -30,13 +30,15 @@ class Robot:
         :param traits: Extras the robot supports
         """
         self.name = name
+        self._vendor = vendor
         self.serial = serial
         self.secret = secret
         self.traits = traits
         self.has_persistent_maps = has_persistent_maps
 
-        self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
+        self._url = '{endpoint}/vendors/{vendor_name}/robots/{serial}/messages'.format(
             endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
+            vendor_name=vendor.name,
             serial=self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
@@ -53,10 +55,9 @@ class Robot:
         :return: server response
         """
 
-        cert_path = os.path.join(os.path.dirname(__file__), 'cert', 'neatocloud.com.crt')
         response = requests.post(self._url,
                                  json=json,
-                                 verify=cert_path,
+                                 verify=self._vendor.cert_path,
                                  auth=Auth(self.serial, self.secret),
                                  headers=self._headers)
         response.raise_for_status()

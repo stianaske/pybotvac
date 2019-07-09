@@ -1,9 +1,10 @@
-import requests
 import hashlib
 import hmac
-import time
+import locale
 import os.path
 import re
+import requests
+import time
 
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
@@ -234,6 +235,10 @@ class Auth(requests.auth.AuthBase):
         self.secret = secret
 
     def __call__(self, request):
+        # Due to https://github.com/stianaske/pybotvac/issues/30
+        # Neato expects and supports authentication header ONLY for en_US
+        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+        
         date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
 
         try:

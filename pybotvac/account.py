@@ -18,12 +18,13 @@ class Account:
     """
     Class with data and methods for interacting with a pybotvac cloud session.
 
-    :param email: Email for pybotvac account
-    :param password: Password for pybotvac account
+    :param emailortoken: Email for pybotvac account, or a token obtained in a previous login
+    :param password: Password for pybotvac account, or None if token is used
 
     """
+    _access_token = ""
 
-    def __init__(self, email, password, vendor=Neato):
+    def __init__(self, emailortoken, password, vendor=Neato):
         """Initialize the account data."""
         self._robots = set()
         self.robot_serials = {}
@@ -31,7 +32,10 @@ class Account:
         self._endpoint = vendor.endpoint
         self._maps = {}
         self._headers = {'Accept': vendor.headers}
-        self._login(email, password)
+        if (password is not None):
+            self._login(emailortoken, password)
+        else:
+            self._headers['Authorization'] = 'Token token=%s' % emailortoken
         self._persistent_maps = {}
 
     def _login(self, email, password):
@@ -53,6 +57,10 @@ class Account:
         access_token = response.json()['access_token']
 
         self._headers['Authorization'] = 'Token token=%s' % access_token
+
+    @property
+    def access_token(self):
+        return self._access_token
 
     @property
     def robots(self):

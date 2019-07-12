@@ -54,9 +54,9 @@ class Account:
                                  headers=self._headers)
 
         response.raise_for_status()
-        access_token = response.json()['access_token']
+        self._access_token = response.json()['access_token']
 
-        self._headers['Authorization'] = 'Token token=%s' % access_token
+        self._headers['Authorization'] = 'Token token=%s' % self._access_token
 
     @property
     def access_token(self):

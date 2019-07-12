@@ -1,6 +1,6 @@
 import sys
 
-from pybotvac import Account
+from pybotvac import Account, Vorwerk
 
 if sys.version_info[0] < 3:
     input = raw_input
@@ -8,7 +8,10 @@ if sys.version_info[0] < 3:
 email = input('Enter email\n')
 password = input('Enter password\n')
 
-account = Account(email, password)
+vendor = Vorwerk()
+
+
+account = Account(email, password, vendor)
 
 print("Robots:")
 for robot in account.robots:

@@ -22,14 +22,14 @@ class Account:
 
     """
 
-    ENDPOINT = 'https://beehive.neatocloud.com/'
-
-    def __init__(self, email, password):
+    def __init__(self, email, password, vendor):
         """Initialize the account data."""
         self._robots = set()
         self.robot_serials = {}
+        self._vendor = vendor
+        self._endpoint = vendor.endpoint
         self._maps = {}
-        self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
+        self._headers = {'Accept': vendor.headers}
         self._login(email, password)
         self._persistent_maps = {}
 
@@ -41,7 +41,7 @@ class Account:
         :param password: Password for pybotvac account
         :return:
         """
-        response = requests.post(urljoin(self.ENDPOINT, 'sessions'),
+        response = requests.post(urljoin(self._endpoint, 'sessions'),
                                  json={'email': email,
                                        'password': password,
                                        'platform': 'ios',
@@ -84,7 +84,7 @@ class Account:
         """
         for robot in self.robots:
             resp2 = (
-                requests.get(urljoin(self.ENDPOINT, 'users/me/robots/{}/maps'.format(robot.serial)),
+                requests.get(urljoin(self._endpoint, 'users/me/robots/{}/maps'.format(robot.serial)),
                              headers=self._headers))
             resp2.raise_for_status()
             self._maps.update({robot.serial: resp2.json()})
@@ -95,7 +95,7 @@ class Account:
 
         :return:
         """
-        resp = requests.get(urljoin(self.ENDPOINT, 'dashboard'),
+        resp = requests.get(urljoin(self._endpoint, 'dashboard'),
                             headers=self._headers)
         resp.raise_for_status()
 
@@ -105,6 +105,7 @@ class Account:
 
             try:
                 self._robots.add(Robot(name=robot['name'],
+                                       vendor=self._vendor,
                                        serial=robot['serial'],
                                        secret=robot['secret_key'],
                                        traits=robot['traits'],
@@ -156,7 +157,7 @@ class Account:
         """
         for robot in self._robots:
             resp2 = (requests.get(urljoin(
-                self.ENDPOINT,
+                self._endpoint,
                 'users/me/robots/{}/persistent_maps'.format(robot.serial)),
                 headers=self._headers))
             resp2.raise_for_status()

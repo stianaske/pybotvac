@@ -11,6 +11,7 @@ except ImportError:
     from urlparse import urljoin
 
 from .robot import Robot
+from .neato import Neato    # For default Account argument
 
 
 class Account:
@@ -22,7 +23,7 @@ class Account:
 
     """
 
-    def __init__(self, email, password, vendor):
+    def __init__(self, email, password, vendor=Neato):
         """Initialize the account data."""
         self._robots = set()
         self.robot_serials = {}

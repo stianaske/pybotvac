@@ -241,12 +241,12 @@ class Auth(requests.auth.AuthBase):
     def __call__(self, request):
         # Due to https://github.com/stianaske/pybotvac/issues/30
         # Neato expects and supports authentication header ONLY for en_US
-        saved_locale = locale.getlocale(locale.LC_ALL)
-        locale.setlocale(locale.LC_ALL, 'en_US.utf8')
+        saved_locale = locale.getlocale(locale.LC_TIME)
+        locale.setlocale(locale.LC_TIME, 'en_US.utf8')
         
         date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
 
-        locale.setlocale(locale.LC_ALL, saved_locale)
+        locale.setlocale(locale.LC_TIME, saved_locale)
 
         try:
             # Attempt to decode request.body (assume bytes received)

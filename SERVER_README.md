@@ -1,5 +1,12 @@
 # pybotvac Server
 
+* [Usage](#usage)
+  * [Prerequisites](#prerequisites)
+  * [Clean](#clean)
+  * [Stop cleaning](#stop-cleaning)
+* [NO cecurity in this code](#no-security-in-this-code)
+* [SystemD for execution](#systemd-for-execution)
+
 ## Usage
 
 ### Prerequisites (configuration)
@@ -28,6 +35,7 @@ An example of `robot_cleaning_configuration.json` would be:
 }
 ```
 
+### Clean
 To start the webserver simply run
 ```
 python botvac_server.py
@@ -38,6 +46,7 @@ To initiate cleaning call the endpoint, from the same server that can be accompl
 curl -X PUT http://127.0.0.1:8080
 ```
 
+### Stop cleaning
 The HTTP response will describe the cleaning being started:
 ```
 {
@@ -49,8 +58,15 @@ The HTTP response will describe the cleaning being started:
 }
 ```
 
+To halt cleaning use the GET verb (like "get my robot back on the dock" - har har):
+```
+curl -X GET http://127.0.0.1:8080
+```
+
+## NO cecurity in this code
 Please note that this webserver is not meant to be exposed to an environment with any unknown or bad actors (there is absolutely no security implemented here). Personally, I am running this on a box whose firewall only allows incoming traffic from my home automation controller, which is far more critical and privileged than the box this runs on.
 
+## SystemD for execution
 To make this run consistently you can use a SystemD service file like:
 ```
 [Unit]

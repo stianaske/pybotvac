@@ -10,15 +10,17 @@ cleaning_configuration = json.loads(cleaning_configuration_raw)
 
 if "persistent_maps" in robot_identity["traits"]:
   robot_identity["has_persistent_maps"] = True
+else:
+  robot_identity["has_persistent_maps"] = False
 
-if cleaning_configuration["cleaning_mode"] is "turbo":
+if cleaning_configuration["cleaning_mode"] == "turbo":
   cleaning_configuration["numeric_cleaning_mode"] = 2
 else:
   cleaning_configuration["numeric_cleaning_mode"] = 1
   
-if cleaning_configuration["navigation_mode"] is "extra care":
+if cleaning_configuration["navigation_mode"] == "extra care":
   cleaning_configuration["numeric_navigation_mode"] = 2
-elif cleaning_configuration["navigation_mode"] is "deep":
+elif cleaning_configuration["navigation_mode"] == "deep":
   cleaning_configuration["numeric_navigation_mode"] = 3
 else:
   cleaning_configuration["numeric_navigation_mode"] = 1

@@ -36,10 +36,10 @@ class myHandler(BaseHTTPRequestHandler):
     robot = Robot(serial=robot_identity["serial"], secret=robot_identity["secret"], name=robot_identity["name"], traits=robot_identity["traits"], has_persistent_maps=robot_identity["has_persistent_maps"])
     robot.start_cleaning(mode=cleaning_configuration["numeric_cleaning_mode"], navigation_mode=cleaning_configuration["numeric_navigation_mode"], category=cleaning_configuration["numeric_category"])
     self.send_response(200)
-    self.send_header('Content-type','text/plain')
+    self.send_header('Content-type','application/json')
     self.end_headers()
     # Send the html message
-    self.wfile.write("Robot Activated")
+    self.wfile.write(json.dumps(cleaning_configuration))
     return
 
 def run(server_class=HTTPServer,

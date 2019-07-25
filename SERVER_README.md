@@ -50,3 +50,20 @@ The HTTP response will describe the cleaning being started:
 ```
 
 Please note that this webserver is not meant to be exposed to an environment with any unknown or bad actors (there is absolutely no security implemented here). Personally, I am running this on a box whose firewall only allows incoming traffic from my home automation controller, which is far more critical and privileged than the box this runs on.
+
+To make this run consistently you can use a SystemD service file like:
+```
+[Unit]
+Description=Neato Robot HTTP Server
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/robot_controller
+ExecStart=/usr/bin/python pybotvac/botvac_server.py
+Restart=always
+User=robot_controller
+
+[Install]
+WantedBy=multi-user.target
+```

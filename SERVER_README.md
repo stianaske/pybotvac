@@ -1,7 +1,7 @@
 # pybotvac Server
 
 * [Usage](#usage)
-  * [Prerequisites](#prerequisites)
+  * [Prerequisites](#prerequisites/configuration)
   * [Clean](#clean)
   * [Stop cleaning](#stop-cleaning)
 * [NO cecurity in this code](#no-security-in-this-code)
@@ -9,7 +9,7 @@
 
 ## Usage
 
-### Prerequisites (configuration)
+### Prerequisites/configuration
 You must create two JSON files in the home directory of the ID the webserver will run as:
  - `robot_identity.json`
  - `robot_cleaning_configuration.json`

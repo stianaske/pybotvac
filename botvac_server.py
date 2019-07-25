@@ -31,20 +31,30 @@ else:
   cleaning_configuration["numeric_category"] = 2
 
 class myHandler(BaseHTTPRequestHandler):
-  #Handler for the GET requests
+  #Handler for the PUT requests to initiate cleaning
   def do_PUT(self):
     robot = Robot(serial=robot_identity["serial"], secret=robot_identity["secret"], name=robot_identity["name"], traits=robot_identity["traits"], has_persistent_maps=robot_identity["has_persistent_maps"])
     robot.start_cleaning(mode=cleaning_configuration["numeric_cleaning_mode"], navigation_mode=cleaning_configuration["numeric_navigation_mode"], category=cleaning_configuration["numeric_category"])
     self.send_response(200)
     self.send_header('Content-type','application/json')
     self.end_headers()
-    # Send the html message
+    # Send the cleaning configuration used
     self.wfile.write(json.dumps(cleaning_configuration))
+    return
+
+  #Handler for the GET requests to terminate cleaning mid-run
+  def do_GET(self):
+    robot = Robot(serial=robot_identity["serial"], secret=robot_identity["secret"], name=robot_identity["name"], traits=robot_identity["traits"], has_persistent_maps=robot_identity["has_persistent_maps"])
+    robot.send_to_base()
+    self.send_response(200)
+    self.send_header('Content-type','text/plain')
+    self.end_headers()
+    self.wfile.write("Returning to base")
     return
 
 def run(server_class=HTTPServer,
         handler_class=myHandler):
-    server_address = ('', 8080)
+    server_address = ("10.2.3.13", 8080)
     httpd = server_class(server_address, handler_class)
     httpd.serve_forever()
 

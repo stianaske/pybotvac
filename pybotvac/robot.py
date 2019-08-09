@@ -43,8 +43,7 @@ class Robot:
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:
-            raise UnsupportedDevice(
-                "Version " + self.service_version + " of service houseCleaning is not known")
+            raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -74,8 +73,7 @@ class Robot:
 
         # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
-            category = 4 if self.service_version in [
-                'basic-3', 'basic-4'] and self.has_persistent_maps else 2
+            category = 4 if self.service_version in ['basic-3', 'basic-4'] and self.has_persistent_maps else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",
@@ -247,8 +245,7 @@ class Auth(requests.auth.AuthBase):
 
         try:
             # Attempt to decode request.body (assume bytes received)
-            msg = '\n'.join([self.serial.lower(), date,
-                             request.body.decode('utf8')])
+            msg = '\n'.join([self.serial.lower(), date, request.body.decode('utf8')])
         except AttributeError:
             # Decode failed, assume request.body is already type str
             msg = '\n'.join([self.serial.lower(), date, request.body])

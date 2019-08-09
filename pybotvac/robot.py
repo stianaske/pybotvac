@@ -1,10 +1,9 @@
 import hashlib
 import hmac
-import locale
 import os.path
 import re
 import requests
-import time
+from datetime import datetime
 
 from .neato import Neato    # For default Vendor argument
 
@@ -46,7 +45,8 @@ class Robot:
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:
-            raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
+            raise UnsupportedDevice(
+                "Version " + self.service_version + " of service houseCleaning is not known")
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -76,7 +76,8 @@ class Robot:
 
         # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
-            category = 4 if self.service_version in ['basic-3', 'basic-4'] and self.has_persistent_maps else 2
+            category = 4 if self.service_version in [
+                'basic-3', 'basic-4'] and self.has_persistent_maps else 2
 
         if self.service_version == 'basic-1':
             json = {'reqId': "1",
@@ -125,7 +126,7 @@ class Robot:
             return self._message(json)
 
         return response
-        
+
     def start_spot_cleaning(self, spot_width=400, spot_height=400):
         # Spot cleaning if applicable to version
         # spot_width: spot width in cm
@@ -193,19 +194,19 @@ class Robot:
 
     def locate(self):
         return self._message({'reqId': "1", 'cmd': "findMe"})
-    
+
     def get_general_info(self):
         return self._message({'reqId': "1", 'cmd': "getGeneralInfo"})
-    
+
     def get_local_stats(self):
         return self._message({'reqId': "1", 'cmd': "getLocalStats"})
-    
+
     def get_preferences(self):
         return self._message({'reqId': "1", 'cmd': "getPreferences"})
-    
+
     def get_map_boundaries(self, map_id=None):
         return self._message({'reqId': "1", 'cmd': "getMapBoundaries", 'params': {'mapId': map_id}})
-    
+
     def get_robot_info(self):
         return self._message({'reqId': "1", 'cmd': "getRobotInfo"})
 
@@ -243,16 +244,13 @@ class Auth(requests.auth.AuthBase):
     def __call__(self, request):
         # Due to https://github.com/stianaske/pybotvac/issues/30
         # Neato expects and supports authentication header ONLY for en_US
-        saved_locale = locale.getlocale(locale.LC_TIME)
-        locale.setlocale(locale.LC_TIME, 'en_US.utf8')
-        
-        date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
-
-        locale.setlocale(locale.LC_TIME, saved_locale)
+        dt = datetime.utcnow()
+        date = dt.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
         try:
             # Attempt to decode request.body (assume bytes received)
-            msg = '\n'.join([self.serial.lower(), date, request.body.decode('utf8')])
+            msg = '\n'.join([self.serial.lower(), date,
+                             request.body.decode('utf8')])
         except AttributeError:
             # Decode failed, assume request.body is already type str
             msg = '\n'.join([self.serial.lower(), date, request.body])

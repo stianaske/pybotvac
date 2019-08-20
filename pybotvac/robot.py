@@ -6,6 +6,8 @@ import re
 import requests
 import time
 
+from .neato import Neato    # For default Vendor argument
+
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
 
@@ -19,7 +21,7 @@ class UnsupportedDevice(Exception):
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, vendor, name='',
+    def __init__(self, serial, secret, traits, vendor=Neato, name='',
                  endpoint='https://nucleo.neatocloud.com:4443',
                  has_persistent_maps=False):
         """

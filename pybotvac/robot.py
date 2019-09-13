@@ -60,7 +60,8 @@ class Robot:
                                     auth=Auth(self.serial, self.secret),
                                     headers=self._headers)
             response.raise_for_status()
-        except requests.exceptions.HTTPError:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
             raise NeatoRobotException("Unable to communicate with robot")
 
         return response

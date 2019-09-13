@@ -56,7 +56,8 @@ class Account:
             access_token = response.json()['access_token']
 
             self._headers['Authorization'] = 'Token token=%s' % access_token
-        except requests.exceptions.HTTPError as e:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
             raise NeatoLoginException("Unable to login to neato, check account credentials")
 
     @property
@@ -96,7 +97,8 @@ class Account:
                                 headers=self._headers))
                 resp2.raise_for_status()
                 self._maps.update({robot.serial: resp2.json()})
-        except requests.exceptions.HTTPError:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
             raise NeatoRobotException("Unable to refresh robot maps")
 
     def refresh_robots(self):
@@ -110,7 +112,8 @@ class Account:
             resp = requests.get(urljoin(self._endpoint, 'dashboard'),
                                 headers=self._headers)
             resp.raise_for_status()
-        except requests.exceptions.HTTPError:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
             raise NeatoRobotException("Unable to refresh robots")
 
         for robot in resp.json()['robots']:
@@ -124,7 +127,8 @@ class Account:
                                        secret=robot['secret_key'],
                                        traits=robot['traits'],
                                        endpoint=robot['nucleo_url']))
-            except requests.exceptions.HTTPError:
+            except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
                 raise NeatoRobotException("Your '{}' robot is offline.".format(robot['name']))
 
         self.refresh_persistent_maps()
@@ -150,7 +154,8 @@ class Account:
                 with open(dest, 'wb') as data:
                     image.raw.decode_content = True
                     shutil.copyfileobj(image.raw, data)
-        except requests.exceptions.HTTPError:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
             raise NeatoRobotException("Unable to get robot map")
 
         return image.raw
@@ -181,5 +186,6 @@ class Account:
                     headers=self._headers))
                 resp2.raise_for_status()
                 self._persistent_maps.update({robot.serial: resp2.json()})
-        except requests.exceptions.HTTPError:
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
             raise NeatoRobotException("Unable to refresh persistent maps")

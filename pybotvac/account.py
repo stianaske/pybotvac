@@ -136,7 +136,7 @@ class Account:
             robot.has_persistent_maps = robot.serial in self._persistent_maps
 
     @staticmethod
-    def get_map_image(url, dest_path=None):
+    def get_map_image(url, dest_path=None, file_name=None):
         """
         Return a requested map from a robot.
 
@@ -148,7 +148,11 @@ class Account:
 
             if dest_path:
                 image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
-                image_filename = image_url.split('?')[0]
+                if file_name:
+                    image_filename = file_name
+                else:
+                    image_filename = image_url.split('?')[0]
+
                 dest = os.path.join(dest_path, image_filename)
                 image.raise_for_status()
                 with open(dest, 'wb') as data:

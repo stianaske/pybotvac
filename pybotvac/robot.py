@@ -5,8 +5,7 @@ import os.path
 import re
 import requests
 import time
-
-from .neato import Neato    # For default Vendor argument
+from .exceptions import NeatoRobotException
 
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
@@ -14,14 +13,10 @@ requests.packages.urllib3.disable_warnings()
 SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
 
 
-class UnsupportedDevice(Exception):
-    pass
-
-
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, vendor=Neato, name='',
+    def __init__(self, serial, secret, traits, vendor, name='',
                  endpoint='https://nucleo.neatocloud.com:4443',
                  has_persistent_maps=False):
         """
@@ -46,7 +41,7 @@ class Robot:
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:
-            raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
+            raise NeatoRobotException("Version " + self.service_version + " of service houseCleaning is not known")
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -58,12 +53,16 @@ class Robot:
         :return: server response
         """
 
-        response = requests.post(self._url,
-                                 json=json,
-                                 verify=self._vendor.cert_path,
-                                 auth=Auth(self.serial, self.secret),
-                                 headers=self._headers)
-        response.raise_for_status()
+        try:
+            response = requests.post(self._url,
+                                    json=json,
+                                    verify=self._vendor.cert_path,
+                                    auth=Auth(self.serial, self.secret),
+                                    headers=self._headers)
+            response.raise_for_status()
+        except requests.exceptions.HTTPError:
+            raise NeatoRobotException("Unable to communicate with robot")
+
         return response
 
     def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None, map_id=None):

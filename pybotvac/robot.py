@@ -1,9 +1,12 @@
-import requests
 import hashlib
 import hmac
-import time
+import locale
 import os.path
 import re
+import requests
+import time
+
+from .neato import Neato    # For default Vendor argument
 
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
@@ -18,7 +21,7 @@ class UnsupportedDevice(Exception):
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, name='',
+    def __init__(self, serial, secret, traits, vendor=Neato, name='',
                  endpoint='https://nucleo.neatocloud.com:4443',
                  has_persistent_maps=False):
         """
@@ -30,13 +33,15 @@ class Robot:
         :param traits: Extras the robot supports
         """
         self.name = name
+        self._vendor = vendor
         self.serial = serial
         self.secret = secret
         self.traits = traits
         self.has_persistent_maps = has_persistent_maps
 
-        self._url = '{endpoint}/vendors/neato/robots/{serial}/messages'.format(
+        self._url = '{endpoint}/vendors/{vendor_name}/robots/{serial}/messages'.format(
             endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
+            vendor_name=vendor.name,
             serial=self.serial)
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
@@ -53,21 +58,21 @@ class Robot:
         :return: server response
         """
 
-        cert_path = os.path.join(os.path.dirname(__file__), 'cert', 'neatocloud.com.crt')
         response = requests.post(self._url,
                                  json=json,
-                                 verify=cert_path,
+                                 verify=self._vendor.cert_path,
                                  auth=Auth(self.serial, self.secret),
                                  headers=self._headers)
         response.raise_for_status()
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None):
+    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None, map_id=None):
         # mode & navigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care, 3 deep
         # category: 2 non-persistent map, 4 persistent map
         # boundary_id: the id of the zone to clean
+        # map_id: the id of the map to clean
 
         # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
@@ -92,6 +97,8 @@ class Robot:
                     }
             if boundary_id:
                 json['params']['boundaryId'] = boundary_id
+            if map_id:
+                json['params']['mapId'] = map_id
         elif self.service_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
@@ -234,7 +241,14 @@ class Auth(requests.auth.AuthBase):
         self.secret = secret
 
     def __call__(self, request):
+        # Due to https://github.com/stianaske/pybotvac/issues/30
+        # Neato expects and supports authentication header ONLY for en_US
+        saved_locale = locale.getlocale(locale.LC_TIME)
+        locale.setlocale(locale.LC_TIME, 'en_US.utf8')
+        
         date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
+
+        locale.setlocale(locale.LC_TIME, saved_locale)
 
         try:
             # Attempt to decode request.body (assume bytes received)

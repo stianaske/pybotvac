@@ -11,6 +11,7 @@ except ImportError:
     from urlparse import urljoin
 
 from .robot import Robot
+from .neato import Neato    # For default Account argument
 
 
 class Account:
@@ -22,14 +23,14 @@ class Account:
 
     """
 
-    ENDPOINT = 'https://beehive.neatocloud.com/'
-
-    def __init__(self, email, password):
+    def __init__(self, email, password, vendor=Neato):
         """Initialize the account data."""
         self._robots = set()
         self.robot_serials = {}
+        self._vendor = vendor
+        self._endpoint = vendor.endpoint
         self._maps = {}
-        self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
+        self._headers = {'Accept': vendor.headers}
         self._login(email, password)
         self._persistent_maps = {}
 
@@ -41,7 +42,7 @@ class Account:
         :param password: Password for pybotvac account
         :return:
         """
-        response = requests.post(urljoin(self.ENDPOINT, 'sessions'),
+        response = requests.post(urljoin(self._endpoint, 'sessions'),
                                  json={'email': email,
                                        'password': password,
                                        'platform': 'ios',
@@ -84,7 +85,7 @@ class Account:
         """
         for robot in self.robots:
             resp2 = (
-                requests.get(urljoin(self.ENDPOINT, 'users/me/robots/{}/maps'.format(robot.serial)),
+                requests.get(urljoin(self._endpoint, 'users/me/robots/{}/maps'.format(robot.serial)),
                              headers=self._headers))
             resp2.raise_for_status()
             self._maps.update({robot.serial: resp2.json()})
@@ -95,7 +96,7 @@ class Account:
 
         :return:
         """
-        resp = requests.get(urljoin(self.ENDPOINT, 'dashboard'),
+        resp = requests.get(urljoin(self._endpoint, 'dashboard'),
                             headers=self._headers)
         resp.raise_for_status()
 
@@ -105,6 +106,7 @@ class Account:
 
             try:
                 self._robots.add(Robot(name=robot['name'],
+                                       vendor=self._vendor,
                                        serial=robot['serial'],
                                        secret=robot['secret_key'],
                                        traits=robot['traits'],
@@ -118,7 +120,7 @@ class Account:
             robot.has_persistent_maps = robot.serial in self._persistent_maps
 
     @staticmethod
-    def get_map_image(url, dest_path=None):
+    def get_map_image(url, dest_path=None, file_name=None):
         """
         Return a requested map from a robot.
 
@@ -128,7 +130,11 @@ class Account:
 
         if dest_path:
             image_url = url.rsplit('/', 2)[1] + '-' + url.rsplit('/', 1)[1]
-            image_filename = image_url.split('?')[0]
+            if file_name:
+                image_filename = file_name
+            else:
+                image_filename = image_url.split('?')[0]
+
             dest = os.path.join(dest_path, image_filename)
             image.raise_for_status()
             with open(dest, 'wb') as data:
@@ -156,7 +162,7 @@ class Account:
         """
         for robot in self._robots:
             resp2 = (requests.get(urljoin(
-                self.ENDPOINT,
+                self._endpoint,
                 'users/me/robots/{}/persistent_maps'.format(robot.serial)),
                 headers=self._headers))
             resp2.raise_for_status()

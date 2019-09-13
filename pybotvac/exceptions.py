@@ -6,3 +6,6 @@ class NeatoLoginException(NeatoException):
 
 class NeatoRobotException(NeatoException):
     pass
+
+class NeatoUnsupportedDevice(NeatoRobotException):
+    pass

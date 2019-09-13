@@ -7,7 +7,7 @@ import requests
 import time
 
 from .neato import Neato    # For default Vendor argument
-from .exceptions import NeatoRobotException
+from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
 
 # Disable warning due to SubjectAltNameWarning in certificate
 requests.packages.urllib3.disable_warnings()
@@ -43,7 +43,7 @@ class Robot:
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:
-            raise NeatoRobotException("Version " + self.service_version + " of service houseCleaning is not known")
+            raise NeatoUnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)

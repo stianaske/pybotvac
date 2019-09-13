@@ -6,7 +6,7 @@ import re
 import requests
 import time
 
-from .neato import Neato
+from .neato import Neato    # For default Vendor argument
 from .exceptions import NeatoRobotException
 
 # Disable warning due to SubjectAltNameWarning in certificate

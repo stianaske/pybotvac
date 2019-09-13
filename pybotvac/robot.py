@@ -5,6 +5,8 @@ import os.path
 import re
 import requests
 import time
+
+from .neato import Neato
 from .exceptions import NeatoRobotException
 
 # Disable warning due to SubjectAltNameWarning in certificate
@@ -16,7 +18,7 @@ SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, vendor, name='',
+    def __init__(self, serial, secret, traits, vendor=Neato, name='',
                  endpoint='https://nucleo.neatocloud.com:4443',
                  has_persistent_maps=False):
         """

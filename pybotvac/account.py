@@ -127,10 +127,11 @@ class Account:
                                        secret=robot['secret_key'],
                                        traits=robot['traits'],
                                        endpoint=robot['nucleo_url']))
-            except (requests.exceptions.ConnectionError,
-                requests.exceptions.HTTPError):
+            except requests.exceptions.HTTPError:
                 print ("Your '{}' robot is offline.".format(robot['name']))
                 continue
+            except requests.exceptions.ConnectionError:
+                raise NeatoRobotException("Unable to add robot")
 
         self.refresh_persistent_maps()
         for robot in self._robots:

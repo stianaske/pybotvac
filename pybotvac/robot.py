@@ -4,6 +4,7 @@ import os.path
 import re
 import requests
 from datetime import datetime
+from babel.dates import format_datetime
 
 from .neato import Neato    # For default Vendor argument
 
@@ -240,10 +241,12 @@ class Auth(requests.auth.AuthBase):
         self.secret = secret
 
     def __call__(self, request):
-        # Due to https://github.com/stianaske/pybotvac/issues/30
-        # Neato expects and supports authentication header ONLY for en_US
-        dt = datetime.utcnow()
-        date = dt.strftime('%a, %d %b %Y %H:%M:%S GMT')
+        # We have to format the date according to RFC 2616
+        # https://tools.ietf.org/html/rfc2616#section-14.18
+
+        now = datetime.utcnow()
+        format = 'EEE, dd LLL yyyy hh:mm:ss'
+        date = format_datetime(now, format, locale='en') + ' GMT'
 
         try:
             # Attempt to decode request.body (assume bytes received)

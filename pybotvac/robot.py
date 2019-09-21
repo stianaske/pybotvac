@@ -4,8 +4,8 @@ import os.path
 import re
 import urllib3
 import requests
-from datetime import datetime
-from babel.dates import format_datetime
+from datetime import datetime, timezone
+from email.utils import format_datetime
 
 from .neato import Neato    # For default Vendor argument
 
@@ -245,9 +245,8 @@ class Auth(requests.auth.AuthBase):
         # We have to format the date according to RFC 2616
         # https://tools.ietf.org/html/rfc2616#section-14.18
 
-        now = datetime.utcnow()
-        format = 'EEE, dd LLL yyyy hh:mm:ss'
-        date = format_datetime(now, format, locale='en') + ' GMT'
+        now = datetime.now(timezone.utc)
+        date = format_datetime(now, True)
 
         try:
             # Attempt to decode request.body (assume bytes received)

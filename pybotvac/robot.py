@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import os.path
 import re
+import urllib3
 import requests
 from datetime import datetime
 from babel.dates import format_datetime
@@ -9,7 +10,7 @@ from babel.dates import format_datetime
 from .neato import Neato    # For default Vendor argument
 
 # Disable warning due to SubjectAltNameWarning in certificate
-requests.packages.urllib3.disable_warnings()
+urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
 

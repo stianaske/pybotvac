@@ -1,2 +1,3 @@
 Babel
+urllib3
 requests

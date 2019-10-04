@@ -13,6 +13,7 @@ from .neato import Neato    # For default Vendor argument
 urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
+ALERTS_FLOORPLAN = ['nav_floorplan_load_fail', 'nav_floorplan_localization_fail', 'nav_floorplan_not_created']
 
 
 class UnsupportedDevice(Exception):
@@ -121,7 +122,9 @@ class Robot:
         response_dict = response.json()
 
         # Fall back to category 2 if we tried and failed with category 4
-        if category == 4 and 'alert' in response_dict and response_dict['alert'] == 'nav_floorplan_load_fail':
+        if (category == 4 and
+                ('alert' in response_dict and response_dict['alert'] in ALERTS_FLOORPLAN) or
+                ('result' in response_dict and response_dict['result'] == 'not_on_charge_base')):
             json['params']['category'] = 2
             return self._message(json)
 

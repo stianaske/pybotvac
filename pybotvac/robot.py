@@ -8,16 +8,13 @@ from datetime import datetime, timezone
 from email.utils import format_datetime
 
 from .neato import Neato    # For default Vendor argument
+from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
 
 # Disable warning due to SubjectAltNameWarning in certificate
 urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
 ALERTS_FLOORPLAN = ['nav_floorplan_load_fail', 'nav_floorplan_localization_fail', 'nav_floorplan_not_created']
-
-
-class UnsupportedDevice(Exception):
-    pass
 
 
 class Robot:
@@ -48,7 +45,7 @@ class Robot:
         self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
 
         if self.service_version not in SUPPORTED_SERVICES:
-            raise UnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
+            raise NeatoUnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
 
     def __str__(self):
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
@@ -60,12 +57,17 @@ class Robot:
         :return: server response
         """
 
-        response = requests.post(self._url,
-                                 json=json,
-                                 verify=self._vendor.cert_path,
-                                 auth=Auth(self.serial, self.secret),
-                                 headers=self._headers)
-        response.raise_for_status()
+        try:
+            response = requests.post(self._url,
+                                    json=json,
+                                    verify=self._vendor.cert_path,
+                                    auth=Auth(self.serial, self.secret),
+                                    headers=self._headers)
+            response.raise_for_status()
+        except (requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError):
+            raise NeatoRobotException("Unable to communicate with robot")
+
         return response
 
     def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None, map_id=None):

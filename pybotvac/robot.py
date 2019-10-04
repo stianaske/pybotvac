@@ -1,15 +1,16 @@
 import hashlib
 import hmac
-import locale
 import os.path
 import re
+import urllib3
 import requests
-import time
+from datetime import datetime, timezone
+from email.utils import format_datetime
 
 from .neato import Neato    # For default Vendor argument
 
 # Disable warning due to SubjectAltNameWarning in certificate
-requests.packages.urllib3.disable_warnings()
+urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
 
@@ -125,7 +126,7 @@ class Robot:
             return self._message(json)
 
         return response
-        
+
     def start_spot_cleaning(self, spot_width=400, spot_height=400):
         # Spot cleaning if applicable to version
         # spot_width: spot width in cm
@@ -193,19 +194,19 @@ class Robot:
 
     def locate(self):
         return self._message({'reqId': "1", 'cmd': "findMe"})
-    
+
     def get_general_info(self):
         return self._message({'reqId': "1", 'cmd': "getGeneralInfo"})
-    
+
     def get_local_stats(self):
         return self._message({'reqId': "1", 'cmd': "getLocalStats"})
-    
+
     def get_preferences(self):
         return self._message({'reqId': "1", 'cmd': "getPreferences"})
-    
+
     def get_map_boundaries(self, map_id=None):
         return self._message({'reqId': "1", 'cmd': "getMapBoundaries", 'params': {'mapId': map_id}})
-    
+
     def get_robot_info(self):
         return self._message({'reqId': "1", 'cmd': "getRobotInfo"})
 
@@ -241,14 +242,11 @@ class Auth(requests.auth.AuthBase):
         self.secret = secret
 
     def __call__(self, request):
-        # Due to https://github.com/stianaske/pybotvac/issues/30
-        # Neato expects and supports authentication header ONLY for en_US
-        saved_locale = locale.getlocale(locale.LC_TIME)
-        locale.setlocale(locale.LC_TIME, 'en_US.utf8')
-        
-        date = time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime()) + ' GMT'
+        # We have to format the date according to RFC 2616
+        # https://tools.ietf.org/html/rfc2616#section-14.18
 
-        locale.setlocale(locale.LC_TIME, saved_locale)
+        now = datetime.now(timezone.utc)
+        date = format_datetime(now, True)
 
         try:
             # Attempt to decode request.body (assume bytes received)

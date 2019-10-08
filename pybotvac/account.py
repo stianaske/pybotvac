@@ -1,6 +1,7 @@
 """Account access and data handling for beehive endpoint."""
 
 import binascii
+import logging
 import os
 import shutil
 import requests
@@ -128,7 +129,7 @@ class Account:
                                        traits=robot['traits'],
                                        endpoint=robot['nucleo_url']))
             except requests.exceptions.HTTPError:
-                print ("Your '{}' robot is offline.".format(robot['name']))
+                logging.warning("Your robot %s is offline.", robot['name'])
                 continue
             except requests.exceptions.ConnectionError:
                 raise NeatoRobotException("Unable to add robot")

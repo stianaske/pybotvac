@@ -57,8 +57,11 @@ class Account:
 
             self._headers['Authorization'] = 'Token token=%s' % access_token
         except (requests.exceptions.ConnectionError,
-                requests.exceptions.HTTPError):
-            raise NeatoLoginException("Unable to login to neato, check account credentials")
+                requests.exceptions.HTTPError) as ex:
+            if isinstance(ex, requests.exceptions.HTTPError) and ex.response.status_code == 403:
+                raise NeatoLoginException("Unable to login to neato, check account credentials.")
+            else:
+                raise NeatoRobotException("Unable to connect to Neato API.")
 
     @property
     def robots(self):

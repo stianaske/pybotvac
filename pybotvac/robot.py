@@ -65,8 +65,8 @@ class Robot:
                                     headers=self._headers)
             response.raise_for_status()
         except (requests.exceptions.ConnectionError,
-                requests.exceptions.HTTPError):
-            raise NeatoRobotException("Unable to communicate with robot")
+                requests.exceptions.HTTPError) as ex:
+            raise NeatoRobotException("Unable to communicate with robot") from ex
 
         return response
 

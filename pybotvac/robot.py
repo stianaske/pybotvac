@@ -215,6 +215,9 @@ class Robot:
     def get_robot_info(self):
         return self._message({'reqId': "1", 'cmd': "getRobotInfo"})
 
+    def dismiss_current_alert(self):
+        return self._message({'reqId': "1", 'cmd': "dismissCurrentAlert"})
+
     @property
     def schedule_enabled(self):
         return self.get_robot_state().json()['details']['isScheduleEnabled']

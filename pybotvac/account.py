@@ -1,6 +1,7 @@
 """Account access and data handling for beehive endpoint."""
 
 import binascii
+import logging
 import os
 import shutil
 import requests
@@ -13,6 +14,8 @@ except ImportError:
 from .robot import Robot
 from .neato import Neato    # For default Account argument
 from .exceptions import NeatoLoginException, NeatoRobotException
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class Account:
@@ -131,7 +134,7 @@ class Account:
                                        traits=robot['traits'],
                                        endpoint=robot['nucleo_url']))
             except NeatoRobotException:
-                print ("Your '{}' robot is offline.".format(robot['name']))
+                _LOGGER.warning("Your robot %s is offline.", robot['name'])
                 continue
 
         self.refresh_persistent_maps()

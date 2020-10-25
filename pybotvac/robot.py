@@ -132,7 +132,7 @@ class Robot:
 
         return response
 
-    def start_spot_cleaning(self, spot_width=400, spot_height=400):
+    def start_spot_cleaning(self, mode=2, modifier=2, spot_width=400, spot_height=400):
         # Spot cleaning if applicable to version
         # spot_width: spot width in cm
         # spot_height: spot height in cm
@@ -142,8 +142,8 @@ class Robot:
                     'cmd': "startCleaning",
                     'params': {
                         'category': 3,
-                        'mode': 1,
-                        'modifier': 1,
+                        'mode': mode,
+                        'modifier': modifier,
                         'spotWidth': spot_width,
                         'spotHeight': spot_height}
                     }
@@ -160,7 +160,7 @@ class Robot:
                     'cmd': "startCleaning",
                     'params': {
                         'category': 3,
-                        'modifier': 1,
+                        'modifier': modifier,
                         "navigationMode": 1}
                     }
         else:   # self.service_version == 'micro-2'

@@ -1,4 +1,5 @@
 from .account import Account
 from .robot import Robot
-
-__version__ = '0.0.10'
+from .version import __version__
+from .vorwerk import Vorwerk
+from .neato import Neato

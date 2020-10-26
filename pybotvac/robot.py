@@ -132,7 +132,7 @@ class Robot:
 
         return response
 
-    def start_spot_cleaning(self, mode=2, modifier=2, spot_width=400, spot_height=400):
+    def start_spot_cleaning(self, spot_width=400, spot_height=400, mode=2, modifier=2):
         # Spot cleaning if applicable to version
         # spot_width: spot width in cm
         # spot_height: spot height in cm

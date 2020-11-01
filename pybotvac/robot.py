@@ -137,7 +137,7 @@ class Robot:
         # spot_width: spot width in cm
         # spot_height: spot height in cm
 
-        if self.service_version == 'basic-1':
+        if self.spot_cleaning_version == 'basic-1':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
@@ -147,7 +147,7 @@ class Robot:
                         'spotWidth': spot_width,
                         'spotHeight': spot_height}
                     }
-        elif self.service_version == 'basic-3':
+        elif self.spot_cleaning_version == 'basic-3':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
@@ -155,7 +155,7 @@ class Robot:
                         'spotWidth': spot_width,
                         'spotHeight': spot_height}
                     }
-        elif self.service_version == 'minimal-2':
+        elif self.spot_cleaning_version == 'minimal-2':
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
@@ -163,7 +163,7 @@ class Robot:
                         'modifier': 1,
                         "navigationMode": 1}
                     }
-        else:   # self.service_version == 'micro-2'
+        else:   # self.spot_cleaning_version == 'micro-2'
             json = {'reqId': "1",
                     'cmd': "startCleaning",
                     'params': {
@@ -240,6 +240,10 @@ class Robot:
     @property
     def service_version(self):
         return self.available_services['houseCleaning']
+
+    @property
+    def spot_cleaning_version(self):
+        return self.available_services['spotCleaning']
 
 
 class Auth(requests.auth.AuthBase):

@@ -7,22 +7,33 @@ import requests
 from datetime import datetime, timezone
 from email.utils import format_datetime
 
-from .neato import Neato    # For default Vendor argument
+from .neato import Neato  # For default Vendor argument
 from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
 
 # Disable warning due to SubjectAltNameWarning in certificate
 urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
-SUPPORTED_SERVICES = ['basic-1', 'minimal-2', 'basic-2', 'basic-3', 'basic-4']
-ALERTS_FLOORPLAN = ['nav_floorplan_load_fail', 'nav_floorplan_localization_fail', 'nav_floorplan_not_created']
+SUPPORTED_SERVICES = ["basic-1", "minimal-2", "basic-2", "basic-3", "basic-4"]
+ALERTS_FLOORPLAN = [
+    "nav_floorplan_load_fail",
+    "nav_floorplan_localization_fail",
+    "nav_floorplan_not_created",
+]
 
 
 class Robot:
     """Data and methods for interacting with a Neato Botvac Connected vacuum robot"""
 
-    def __init__(self, serial, secret, traits, vendor=Neato, name='',
-                 endpoint='https://nucleo.neatocloud.com:4443',
-                 has_persistent_maps=False):
+    def __init__(
+        self,
+        serial,
+        secret,
+        traits,
+        vendor=Neato,
+        name="",
+        endpoint="https://nucleo.neatocloud.com:4443",
+        has_persistent_maps=False,
+    ):
         """
         Initialize robot
 
@@ -38,17 +49,27 @@ class Robot:
         self.traits = traits
         self.has_persistent_maps = has_persistent_maps
 
-        self._url = '{endpoint}/vendors/{vendor_name}/robots/{serial}/messages'.format(
-            endpoint=re.sub(':\d+', '', endpoint),  # Remove port number
+        self._url = "{endpoint}/vendors/{vendor_name}/robots/{serial}/messages".format(
+            endpoint=re.sub(":\d+", "", endpoint),  # Remove port number
             vendor_name=vendor.name,
-            serial=self.serial)
-        self._headers = {'Accept': 'application/vnd.neato.nucleo.v1'}
+            serial=self.serial,
+        )
+        self._headers = {"Accept": "application/vnd.neato.nucleo.v1"}
 
         if self.service_version not in SUPPORTED_SERVICES:
-            raise NeatoUnsupportedDevice("Version " + self.service_version + " of service houseCleaning is not known")
+            raise NeatoUnsupportedDevice(
+                "Version "
+                + self.service_version
+                + " of service houseCleaning is not known"
+            )
 
     def __str__(self):
-        return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (self.name, self.serial, self.secret, self.traits)
+        return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (
+            self.name,
+            self.serial,
+            self.secret,
+            self.traits,
+        )
 
     def _message(self, json):
         """
@@ -58,19 +79,25 @@ class Robot:
         """
 
         try:
-            response = requests.post(self._url,
-                                    json=json,
-                                    verify=self._vendor.cert_path,
-                                    auth=Auth(self.serial, self.secret),
-                                    headers=self._headers)
+            response = requests.post(
+                self._url,
+                json=json,
+                verify=self._vendor.cert_path,
+                auth=Auth(self.serial, self.secret),
+                headers=self._headers,
+            )
             response.raise_for_status()
-        except (requests.exceptions.ConnectionError,
-                requests.exceptions.HTTPError) as ex:
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.HTTPError,
+        ) as ex:
             raise NeatoRobotException("Unable to communicate with robot") from ex
 
         return response
 
-    def start_cleaning(self, mode=2, navigation_mode=1, category=None, boundary_id=None, map_id=None):
+    def start_cleaning(
+        self, mode=2, navigation_mode=1, category=None, boundary_id=None, map_id=None
+    ):
         # mode & navigation_mode used if applicable to service version
         # mode: 1 eco, 2 turbo
         # navigation_mode: 1 normal, 2 extra care, 3 deep
@@ -80,54 +107,67 @@ class Robot:
 
         # Default to using the persistent map if we support basic-3 or basic-4.
         if category is None:
-            category = 4 if self.service_version in ['basic-3', 'basic-4'] and self.has_persistent_maps else 2
+            category = (
+                4
+                if self.service_version in ["basic-3", "basic-4"]
+                and self.has_persistent_maps
+                else 2
+            )
 
-        if self.service_version == 'basic-1':
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': category,
-                        'mode': mode,
-                        'modifier': 1}
-                    }
-        elif self.service_version == 'basic-3' or 'basic-4':
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': category,
-                        'mode': mode,
-                        'modifier': 1,
-                        "navigationMode": navigation_mode}
-                    }
+        if self.service_version == "basic-1":
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {"category": category, "mode": mode, "modifier": 1},
+            }
+        elif self.service_version == "basic-3" or "basic-4":
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {
+                    "category": category,
+                    "mode": mode,
+                    "modifier": 1,
+                    "navigationMode": navigation_mode,
+                },
+            }
             if boundary_id:
-                json['params']['boundaryId'] = boundary_id
+                json["params"]["boundaryId"] = boundary_id
             if map_id:
-                json['params']['mapId'] = map_id
-        elif self.service_version == 'minimal-2':
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': category,
-                        "navigationMode": navigation_mode}
-                    }
-        else:   # self.service_version == 'basic-2'
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': category,
-                        'mode': mode,
-                        'modifier': 1,
-                        "navigationMode": navigation_mode}
-                    }
+                json["params"]["mapId"] = map_id
+        elif self.service_version == "minimal-2":
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {"category": category, "navigationMode": navigation_mode},
+            }
+        else:  # self.service_version == 'basic-2'
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {
+                    "category": category,
+                    "mode": mode,
+                    "modifier": 1,
+                    "navigationMode": navigation_mode,
+                },
+            }
 
         response = self._message(json)
         response_dict = response.json()
 
         # Fall back to category 2 if we tried and failed with category 4
-        if (category == 4 and
-                ('alert' in response_dict and response_dict['alert'] in ALERTS_FLOORPLAN) or
-                ('result' in response_dict and response_dict['result'] == 'not_on_charge_base')):
-            json['params']['category'] = 2
+        if (
+            category == 4
+            and (
+                "alert" in response_dict and response_dict["alert"] in ALERTS_FLOORPLAN
+            )
+            or (
+                "result" in response_dict
+                and response_dict["result"] == "not_on_charge_base"
+            )
+        ):
+            json["params"]["category"] = 2
             return self._message(json)
 
         return response
@@ -137,90 +177,93 @@ class Robot:
         # spot_width: spot width in cm
         # spot_height: spot height in cm
 
-        if self.spot_cleaning_version == 'basic-1':
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': 3,
-                        'mode': mode,
-                        'modifier': modifier,
-                        'spotWidth': spot_width,
-                        'spotHeight': spot_height}
-                    }
-        elif self.spot_cleaning_version == 'basic-3':
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': 3,
-                        'spotWidth': spot_width,
-                        'spotHeight': spot_height}
-                    }
-        elif self.spot_cleaning_version == 'minimal-2':
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': 3,
-                        'modifier': modifier,
-                        "navigationMode": 1}
-                    }
-        else:   # self.spot_cleaning_version == 'micro-2'
-            json = {'reqId': "1",
-                    'cmd': "startCleaning",
-                    'params': {
-                        'category': 3,
-                        "navigationMode": 1}
-                    }
+        if self.spot_cleaning_version == "basic-1":
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {
+                    "category": 3,
+                    "mode": mode,
+                    "modifier": modifier,
+                    "spotWidth": spot_width,
+                    "spotHeight": spot_height,
+                },
+            }
+        elif self.spot_cleaning_version == "basic-3":
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {
+                    "category": 3,
+                    "spotWidth": spot_width,
+                    "spotHeight": spot_height,
+                },
+            }
+        elif self.spot_cleaning_version == "minimal-2":
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {"category": 3, "modifier": modifier, "navigationMode": 1},
+            }
+        else:  # self.spot_cleaning_version == 'micro-2'
+            json = {
+                "reqId": "1",
+                "cmd": "startCleaning",
+                "params": {"category": 3, "navigationMode": 1},
+            }
 
         return self._message(json)
 
     def pause_cleaning(self):
-        return self._message({'reqId': "1", 'cmd': "pauseCleaning"})
+        return self._message({"reqId": "1", "cmd": "pauseCleaning"})
 
     def resume_cleaning(self):
-        return self._message({'reqId': "1", 'cmd': "resumeCleaning"})
+        return self._message({"reqId": "1", "cmd": "resumeCleaning"})
 
     def stop_cleaning(self):
-        return self._message({'reqId': "1", 'cmd': "stopCleaning"})
+        return self._message({"reqId": "1", "cmd": "stopCleaning"})
 
     def send_to_base(self):
-        return self._message({'reqId': "1", 'cmd': "sendToBase"})
+        return self._message({"reqId": "1", "cmd": "sendToBase"})
 
     def get_robot_state(self):
-        return self._message({'reqId': "1", 'cmd': "getRobotState"})
+        return self._message({"reqId": "1", "cmd": "getRobotState"})
 
     def enable_schedule(self):
-        return self._message({'reqId': "1", 'cmd': "enableSchedule"})
+        return self._message({"reqId": "1", "cmd": "enableSchedule"})
 
     def disable_schedule(self):
-        return self._message({'reqId': "1", 'cmd': "disableSchedule"})
+        return self._message({"reqId": "1", "cmd": "disableSchedule"})
 
     def get_schedule(self):
-        return self._message({'reqId': "1", 'cmd': "getSchedule"})
+        return self._message({"reqId": "1", "cmd": "getSchedule"})
 
     def locate(self):
-        return self._message({'reqId': "1", 'cmd': "findMe"})
+        return self._message({"reqId": "1", "cmd": "findMe"})
 
     def get_general_info(self):
-        return self._message({'reqId': "1", 'cmd': "getGeneralInfo"})
+        return self._message({"reqId": "1", "cmd": "getGeneralInfo"})
 
     def get_local_stats(self):
-        return self._message({'reqId': "1", 'cmd': "getLocalStats"})
+        return self._message({"reqId": "1", "cmd": "getLocalStats"})
 
     def get_preferences(self):
-        return self._message({'reqId': "1", 'cmd': "getPreferences"})
+        return self._message({"reqId": "1", "cmd": "getPreferences"})
 
     def get_map_boundaries(self, map_id=None):
-        return self._message({'reqId': "1", 'cmd': "getMapBoundaries", 'params': {'mapId': map_id}})
+        return self._message(
+            {"reqId": "1", "cmd": "getMapBoundaries", "params": {"mapId": map_id}}
+        )
 
     def get_robot_info(self):
-        return self._message({'reqId': "1", 'cmd': "getRobotInfo"})
+        return self._message({"reqId": "1", "cmd": "getRobotInfo"})
 
     def dismiss_current_alert(self):
-        return self._message({'reqId': "1", 'cmd': "dismissCurrentAlert"})
+        return self._message({"reqId": "1", "cmd": "dismissCurrentAlert"})
 
     @property
     def schedule_enabled(self):
-        return self.get_robot_state().json()['details']['isScheduleEnabled']
+        return self.get_robot_state().json()["details"]["isScheduleEnabled"]
 
     @schedule_enabled.setter
     def schedule_enabled(self, enable):
@@ -235,15 +278,15 @@ class Robot:
 
     @property
     def available_services(self):
-        return self.state['availableServices']
+        return self.state["availableServices"]
 
     @property
     def service_version(self):
-        return self.available_services['houseCleaning']
+        return self.available_services["houseCleaning"]
 
     @property
     def spot_cleaning_version(self):
-        return self.available_services['spotCleaning']
+        return self.available_services["spotCleaning"]
 
 
 class Auth(requests.auth.AuthBase):
@@ -262,16 +305,18 @@ class Auth(requests.auth.AuthBase):
 
         try:
             # Attempt to decode request.body (assume bytes received)
-            msg = '\n'.join([self.serial.lower(), date, request.body.decode('utf8')])
+            msg = "\n".join([self.serial.lower(), date, request.body.decode("utf8")])
         except AttributeError:
             # Decode failed, assume request.body is already type str
-            msg = '\n'.join([self.serial.lower(), date, request.body])
+            msg = "\n".join([self.serial.lower(), date, request.body])
 
-        signing = hmac.new(key=self.secret.encode('utf8'),
-                           msg=msg.encode('utf8'),
-                           digestmod=hashlib.sha256)
+        signing = hmac.new(
+            key=self.secret.encode("utf8"),
+            msg=msg.encode("utf8"),
+            digestmod=hashlib.sha256,
+        )
 
-        request.headers['Date'] = date
-        request.headers['Authorization'] = "NEATOAPP " + signing.hexdigest()
+        request.headers["Date"] = date
+        request.headers["Authorization"] = "NEATOAPP " + signing.hexdigest()
 
         return request

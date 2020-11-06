@@ -5,8 +5,8 @@ from pybotvac import Account, Vorwerk
 if sys.version_info[0] < 3:
     input = raw_input
 
-email = input('Enter email\n')
-password = input('Enter password\n')
+email = input("Enter email\n")
+password = input("Enter password\n")
 
 vendor = Vorwerk()
 

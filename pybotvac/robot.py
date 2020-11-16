@@ -1,6 +1,5 @@
 import hashlib
 import hmac
-import os.path
 import re
 import urllib3
 import requests
@@ -54,7 +53,7 @@ class Robot:
             vendor_name=vendor.name,
             serial=self.serial,
         )
-        self._headers = {"Accept": "application/vnd.neato.nucleo.v1"}
+        self._headers = {"Accept": vendor.nucleo_version}
 
         if self.service_version not in SUPPORTED_SERVICES:
             raise NeatoUnsupportedDevice(

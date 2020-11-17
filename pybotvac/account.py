@@ -74,21 +74,16 @@ class Account:
         resp = self._session.get("users/me/robots")
 
         for robot in resp.json():
-            # TODO: how to detect robots that are not online?
-            if robot["serial"] is None:
-                continue  # Ignore robots without serial
-
             try:
-                self._robots.add(
-                    Robot(
-                        name=robot["name"],
-                        vendor=self._session.vendor,
-                        serial=robot["serial"],
-                        secret=robot["secret_key"],
-                        traits=robot["traits"],
-                        endpoint=robot["nucleo_url"],
-                    )
+                r = Robot(
+                    name=robot["name"],
+                    vendor=self._session.vendor,
+                    serial=robot["serial"],
+                    secret=robot["secret_key"],
+                    traits=robot["traits"],
+                    endpoint=robot["nucleo_url"],
                 )
+                self._robots.add(r)
             except NeatoRobotException:
                 _LOGGER.warning("Your robot %s is offline.", robot["name"])
                 continue

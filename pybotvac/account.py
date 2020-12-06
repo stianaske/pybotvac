@@ -1,19 +1,14 @@
 """Account access and data handling for beehive endpoint."""
 
-import binascii
 import logging
 import os
 import shutil
+
 import requests
 
-try:
-    from urllib.parse import urljoin
-except ImportError:
-    from urlparse import urljoin
-
+from .exceptions import NeatoRobotException
 from .robot import Robot
-from .neato import Neato  # For default Account argument
-from .exceptions import NeatoLoginException, NeatoRobotException
+from .session import Session
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -27,55 +22,13 @@ class Account:
 
     """
 
-    def __init__(self, email, password, vendor=Neato):
+    def __init__(self, session: Session):
         """Initialize the account data."""
         self._robots = set()
         self.robot_serials = {}
-        self._vendor = vendor
-        self._endpoint = vendor.endpoint
         self._maps = {}
-        self._headers = {"Accept": vendor.headers}
-        self._login(email, password)
         self._persistent_maps = {}
-
-    def _login(self, email, password):
-        """
-        Login to pybotvac account using provided email and password.
-
-        :param email: email for pybotvac account
-        :param password: Password for pybotvac account
-        :return:
-        """
-
-        try:
-            response = requests.post(
-                urljoin(self._endpoint, "sessions"),
-                json={
-                    "email": email,
-                    "password": password,
-                    "platform": "ios",
-                    "token": binascii.hexlify(os.urandom(64)).decode("utf8"),
-                },
-                headers=self._headers,
-            )
-
-            response.raise_for_status()
-            access_token = response.json()["access_token"]
-
-            self._headers["Authorization"] = "Token token=%s" % access_token
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-        ) as ex:
-            if (
-                isinstance(ex, requests.exceptions.HTTPError)
-                and ex.response.status_code == 403
-            ):
-                raise NeatoLoginException(
-                    "Unable to login to neato, check account credentials."
-                ) from ex
-            else:
-                raise NeatoRobotException("Unable to connect to Neato API.") from ex
+        self._session = session
 
     @property
     def robots(self):
@@ -107,21 +60,9 @@ class Account:
         :return:
         """
 
-        try:
-            for robot in self.robots:
-                resp2 = requests.get(
-                    urljoin(
-                        self._endpoint, "users/me/robots/{}/maps".format(robot.serial)
-                    ),
-                    headers=self._headers,
-                )
-                resp2.raise_for_status()
-                self._maps.update({robot.serial: resp2.json()})
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-        ) as ex:
-            raise NeatoRobotException("Unable to refresh robot maps") from ex
+        for robot in self.robots:
+            resp2 = self._session.get("users/me/robots/{}/maps".format(robot.serial))
+            self._maps.update({robot.serial: resp2.json()})
 
     def refresh_robots(self):
         """
@@ -130,32 +71,19 @@ class Account:
         :return:
         """
 
-        try:
-            resp = requests.get(
-                urljoin(self._endpoint, "dashboard"), headers=self._headers
-            )
-            resp.raise_for_status()
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-        ) as ex:
-            raise NeatoRobotException("Unable to refresh robots") from ex
+        resp = self._session.get("users/me/robots")
 
-        for robot in resp.json()["robots"]:
-            if robot["mac_address"] is None:
-                continue  # Ignore robots without mac-address
-
+        for robot in resp.json():
             try:
-                self._robots.add(
-                    Robot(
-                        name=robot["name"],
-                        vendor=self._vendor,
-                        serial=robot["serial"],
-                        secret=robot["secret_key"],
-                        traits=robot["traits"],
-                        endpoint=robot["nucleo_url"],
-                    )
+                r = Robot(
+                    name=robot["name"],
+                    vendor=self._session.vendor,
+                    serial=robot["serial"],
+                    secret=robot["secret_key"],
+                    traits=robot["traits"],
+                    endpoint=robot["nucleo_url"],
                 )
+                self._robots.add(r)
             except NeatoRobotException:
                 _LOGGER.warning("Your robot %s is offline.", robot["name"])
                 continue
@@ -190,6 +118,7 @@ class Account:
         except (
             requests.exceptions.ConnectionError,
             requests.exceptions.HTTPError,
+            requests.exceptions.Timeout,
         ) as ex:
             raise NeatoRobotException("Unable to get robot map") from ex
 
@@ -213,19 +142,9 @@ class Account:
         :return:
         """
 
-        try:
-            for robot in self._robots:
-                resp2 = requests.get(
-                    urljoin(
-                        self._endpoint,
-                        "users/me/robots/{}/persistent_maps".format(robot.serial),
-                    ),
-                    headers=self._headers,
-                )
-                resp2.raise_for_status()
-                self._persistent_maps.update({robot.serial: resp2.json()})
-        except (
-            requests.exceptions.ConnectionError,
-            requests.exceptions.HTTPError,
-        ) as ex:
-            raise NeatoRobotException("Unable to refresh persistent maps") from ex
+        for robot in self._robots:
+            resp2 = self._session.get(
+                "users/me/robots/{}/persistent_maps".format(robot.serial)
+            )
+
+            self._persistent_maps.update({robot.serial: resp2.json()})

@@ -75,7 +75,7 @@ class Account:
 
         for robot in resp.json():
             try:
-                r = Robot(
+                robot_object = Robot(
                     name=robot["name"],
                     vendor=self._session.vendor,
                     serial=robot["serial"],
@@ -83,7 +83,7 @@ class Account:
                     traits=robot["traits"],
                     endpoint=robot["nucleo_url"],
                 )
-                self._robots.add(r)
+                self._robots.add(robot_object)
             except NeatoRobotException:
                 _LOGGER.warning("Your robot %s is offline.", robot["name"])
                 continue

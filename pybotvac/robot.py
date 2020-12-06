@@ -1,13 +1,14 @@
 import hashlib
 import hmac
 import re
-import urllib3
-import requests
 from datetime import datetime, timezone
 from email.utils import format_datetime
 
-from .neato import Neato  # For default Vendor argument
+import requests
+import urllib3
+
 from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
+from .neato import Neato  # For default Vendor argument
 
 # Disable warning due to SubjectAltNameWarning in certificate
 urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
@@ -48,6 +49,7 @@ class Robot:
         self.traits = traits
         self.has_persistent_maps = has_persistent_maps
 
+        # pylint: disable=anomalous-backslash-in-string
         self._url = "{endpoint}/vendors/{vendor_name}/robots/{serial}/messages".format(
             endpoint=re.sub(":\d+", "", endpoint),  # Remove port number
             vendor_name=vendor.name,

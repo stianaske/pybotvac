@@ -141,6 +141,7 @@ class OAuthSession(Session):
 
     def get_authorization_url(self) -> str:
         """Get an authorization url via oauth2."""
+        # pylint: disable=unused-variable
         authorization_url, state = self._oauth.authorization_url(
             self.vendor.auth_endpoint
         )

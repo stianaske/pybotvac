@@ -11,8 +11,6 @@ from .robot import Robot
 from .session import Session
 
 _LOGGER = logging.getLogger(__name__)
-
-
 class Account:
     """
     Class with data and methods for interacting with a pybotvac cloud session.
@@ -76,7 +74,7 @@ class Account:
         for robot in resp.json():
             try:
                 robot_object = Robot(
-                    name=robot["name"],
+                    name=robot['name'],
                     vendor=self._session.vendor,
                     serial=robot["serial"],
                     secret=robot["secret_key"],

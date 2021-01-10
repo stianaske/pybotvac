@@ -1,5 +1,6 @@
 urllib3
 requests
 requests_oauthlib
+voluptuous
 black
 pylint

@@ -16,5 +16,5 @@ setup(
     packages=["pybotvac"],
     package_dir={"pybotvac": "pybotvac"},
     package_data={"pybotvac": ["cert/*.crt"]},
-    install_requires=["requests", "requests_oauthlib"],
+    install_requires=["requests", "requests_oauthlib", "voluptuous"],
 )

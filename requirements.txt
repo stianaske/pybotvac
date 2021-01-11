@@ -1,9 +1,9 @@
 urllib3
 requests
 requests_oauthlib
+bandit>=1
 black
-pylint>=2.6
+codespell>=2
 flake8>=3
 isort>=5
-bandit>=1
-codespell>=2
+pylint>=2.6

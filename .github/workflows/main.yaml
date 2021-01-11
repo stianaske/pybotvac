@@ -14,6 +14,7 @@ jobs:
           python-version: "3.8"
           architecture: "x64"
       - run: pip install -r requirements.txt
+      - run: codespell
       - run: black --check .
       - run: isort --check --diff .
       - run: pylint pybotvac

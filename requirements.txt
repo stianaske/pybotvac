@@ -6,3 +6,4 @@ pylint>=2.6
 flake8>=3
 isort>=5
 bandit>=1
+codespell>=2

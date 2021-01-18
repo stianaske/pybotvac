@@ -138,7 +138,7 @@ class Robot:
 
         # pylint: disable=anomalous-backslash-in-string
         self._url = "{endpoint}/vendors/{vendor_name}/robots/{serial}/messages".format(
-            endpoint=re.sub(":\d+", "", endpoint),  # Remove port number
+            endpoint=re.sub(":\d+", "", endpoint),  # noqa: W605, Remove port number
             vendor_name=vendor.name,
             serial=self.serial,
         )

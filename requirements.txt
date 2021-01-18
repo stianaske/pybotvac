@@ -1,6 +1,7 @@
 urllib3
 requests
 requests_oauthlib
+voluptuous
 bandit>=1
 black
 codespell>=2

@@ -50,8 +50,8 @@ MAP_SCHEMA = Schema(
         Required("url"): Url,
         "url_valid_for_seconds": Any(int, None),
         Optional("run_id"): str,  # documented, but not present
-        "status": Any("complete", "incomplete", "canceled"),
-        "launched_from": Any("robot", "schedule", "app"),
+        "status": Any(str, None),
+        "launched_from": Any(str, None),
         "error": Any(str, None),
         "category": Any(int, None),
         "mode": Any(int, None),

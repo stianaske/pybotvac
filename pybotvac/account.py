@@ -84,7 +84,7 @@ MAPS_SCHEMA = Schema(
 )
 PERSISTENT_MAP_SCHEMA = Schema(
     {
-        Required("id"): str,
+        Required("id"): Any(int, str),
         Required("name"): str,
         Required("url"): Url,
         "raw_floor_map_url": Any(Url, None),

@@ -36,7 +36,7 @@ class Session:
     def generate_headers(
         self, custom_headers: Optional[Dict[str, str]] = None
     ) -> Dict[str, str]:
-        """"Merge self.headers with custom headers id necessary."""
+        """Merge self.headers with custom headers id necessary."""
         if not custom_headers:
             return self.headers
 

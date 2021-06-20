@@ -218,7 +218,7 @@ class Robot:
                 "cmd": "startCleaning",
                 "params": {"category": category, "mode": mode, "modifier": 1},
             }
-        elif self.service_version == "basic-3" or "basic-4":
+        elif self.service_version in ["basic-3", "basic-4"]:
             json = {
                 "reqId": "1",
                 "cmd": "startCleaning",

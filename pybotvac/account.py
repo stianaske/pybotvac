@@ -71,10 +71,10 @@ MAP_SCHEMA = Schema(
         "delocalized": Any(bool, None),
         # Everything below this line is not documented, but still present
         "generated_at": Any(str, None),
-        "persistent_map_id": Any(str, None),
-        "cleaned_with_persistent_map_id": Any(str, None),
+        "persistent_map_id": Any(int, str, None),
+        "cleaned_with_persistent_map_id": Any(int, str, None),
         "valid_as_persistent_map": Any(bool, None),
-        "navigation_mode": Any(int, None),
+        "navigation_mode": Any(int, str, None),
     },
     extra=ALLOW_EXTRA,
 )
@@ -145,12 +145,13 @@ class Account:
         for robot in self.robots:
             url = f"users/me/robots/{robot.serial}/maps"
             resp2 = self._session.get(url)
+            resp2_json = resp2.json()
             try:
-                MAPS_SCHEMA(resp2.json())
-                self._maps.update({robot.serial: resp2.json()})
+                MAPS_SCHEMA(resp2_json)
+                self._maps.update({robot.serial: resp2_json})
             except MultipleInvalid as ex:
                 _LOGGER.warning(
-                    "Invalid response from %s: %s. Got: %s", url, ex, resp2.json()
+                    "Invalid response from %s: %s. Got: %s", url, ex, resp2_json
                 )
 
     def refresh_robots(self):

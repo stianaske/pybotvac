@@ -41,7 +41,7 @@ USER_SCHEMA = Schema(
         "country_code": Any(str, None),
         "source": Any(str, None),
         "developer": Any(bool, None),
-        Required("email"): str,
+        "email": Any(str, None),
         "newsletter": Any(bool, None),
         "created_at": Any(str, None),
         "verified_at": Any(str, None),

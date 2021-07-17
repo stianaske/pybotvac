@@ -24,6 +24,30 @@ from .session import Session
 
 _LOGGER = logging.getLogger(__name__)
 
+USER_SCHEMA = Schema(
+    {
+        Required("id"): str,
+        "first_name": Any(str, None),
+        "last_name": Any(str, None),
+        "company": Any(str, None),
+        "locale": Any(str, None),
+        "phone_number": Any(str, None),
+        "street_1": Any(str, None),
+        "street_2": Any(str, None),
+        "city": Any(str, None),
+        "post_code": Any(str, None),
+        "province": Any(str, None),
+        "state_region": Any(str, None),
+        "country_code": Any(str, None),
+        "source": Any(str, None),
+        "developer": Any(bool, None),
+        "email": Any(str, None),
+        "newsletter": Any(bool, None),
+        "created_at": Any(str, None),
+        "verified_at": Any(str, None),
+    }
+)
+
 ROBOT_SCHEMA = Schema(
     {
         Required("serial"): str,
@@ -111,6 +135,7 @@ class Account:
         self._maps = {}
         self._persistent_maps = {}
         self._session = session
+        self._userdata = {}
 
     @property
     def robots(self):
@@ -127,7 +152,7 @@ class Account:
     @property
     def maps(self):
         """
-        Return set of userdata for logged in account.
+        Return set of map data for logged in account.
 
         :return:
         """
@@ -256,3 +281,42 @@ class Account:
                 _LOGGER.warning(
                     "Invalid response from %s: %s. Got: %s", url, ex, resp2.json()
                 )
+
+    @property
+    def unique_id(self):
+        """
+        Return the unique id of logged in account.
+
+        :return:
+        """
+        if not self._userdata:
+            self.refresh_userdata()
+
+        return self._userdata["id"]
+
+    @property
+    def email(self):
+        """
+        Return email of logged in account.
+
+        :return:
+        """
+        if not self._userdata:
+            self.refresh_userdata()
+
+        return self._userdata["email"]
+
+    def refresh_userdata(self):
+        """
+        Get information about the user who is logged in.
+
+        :return:
+        """
+        url = "users/me"
+        resp = self._session.get(url)
+        resp_json = resp.json()
+        try:
+            USER_SCHEMA(resp_json)
+            self._userdata = resp_json
+        except MultipleInvalid as ex:
+            _LOGGER.warning("Invalid response from %s: %s. Got: %s", url, ex, resp_json)

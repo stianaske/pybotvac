@@ -257,5 +257,5 @@ class PasswordlessSession(Session):
             requests.exceptions.HTTPError,
             requests.exceptions.Timeout,
         ) as ex:
-            raise NeatoException("Unable to connect to neato the neato serves.") from ex
+            raise NeatoException("Unable to connect to neato servers.") from ex
         return response

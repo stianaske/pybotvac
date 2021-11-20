@@ -221,6 +221,8 @@ class Account:
             if ("persistent_maps" in robot.traits
                     and len(self._persistent_maps.get(robot.serial, [])) > 0):
                 robot.has_persistent_maps = True
+            else:
+                robot.has_persistent_maps = False
 
     @staticmethod
     def get_map_image(url, dest_path=None, file_name=None):

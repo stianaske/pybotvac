@@ -218,7 +218,7 @@ class Account:
 
         self.refresh_persistent_maps()
         for robot in self._robots:
-            robot.has_persistent_maps = robot.serial in self._persistent_maps
+            robot.has_persistent_maps = len(self._persistent_maps.get(robot.serial, [])) > 0
 
     @staticmethod
     def get_map_image(url, dest_path=None, file_name=None):

@@ -59,7 +59,6 @@ class PasswordSession(Session):
         """
 
         try:
-            # pylint: disable=missing-timeout
             response = requests.post(
                 urljoin(self.endpoint, "sessions"),
                 json={
@@ -69,6 +68,7 @@ class PasswordSession(Session):
                     "token": binascii.hexlify(os.urandom(64)).decode("utf8"),
                 },
                 headers=self.headers,
+                timeout=10,
             )
 
             response.raise_for_status()
@@ -94,8 +94,7 @@ class PasswordSession(Session):
         url = self.urljoin(path)
         headers = self.generate_headers(kwargs.pop("headers", None))
         try:
-            # pylint: disable=missing-timeout
-            response = requests.get(url, headers=headers, **kwargs)
+            response = requests.get(url, headers=headers, timeout=10, **kwargs)
             response.raise_for_status()
         except (
             requests.exceptions.ConnectionError,
@@ -208,7 +207,6 @@ class PasswordlessSession(Session):
 
     def send_email_otp(self, email: str):
         """Request an authorization code via email."""
-        # pylint: disable=missing-timeout
         response = requests.post(
             self.vendor.passwordless_endpoint,
             data=json.dumps(
@@ -220,12 +218,12 @@ class PasswordlessSession(Session):
                 }
             ),
             headers={"Content-Type": "application/json"},
+            timeout=10,
         )
         response.raise_for_status()
 
     def fetch_token_passwordless(self, email: str, code: str):
         """Fetch an access token using the emailed code."""
-        # pylint: disable=missing-timeout
         response = requests.post(
             self.vendor.token_endpoint,
             data=json.dumps(
@@ -245,6 +243,7 @@ class PasswordlessSession(Session):
                 }
             ),
             headers={"Content-Type": "application/json"},
+            timeout=10,
         )
         response.raise_for_status()
         self._token = response.json()
@@ -257,8 +256,7 @@ class PasswordlessSession(Session):
         headers["Authorization"] = "Auth0Bearer {}".format(self._token.get("id_token"))
 
         try:
-            # pylint: disable=missing-timeout
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
         except (
             requests.exceptions.ConnectionError,

@@ -174,13 +174,13 @@ class Robot:
         """
 
         try:
-            # pylint: disable=missing-timeout
             response = requests.post(
                 self._url,
                 json=json,
                 verify=self._vendor.cert_path,
                 auth=Auth(self.serial, self.secret),
                 headers=self._headers,
+                timeout=10,
             )
             response.raise_for_status()
             schema(response.json())

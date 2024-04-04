@@ -1,4 +1,5 @@
 """Sessionhandling for beehive endpoint."""
+
 import binascii
 import json
 import os

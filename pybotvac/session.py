@@ -59,6 +59,7 @@ class PasswordSession(Session):
         """
 
         try:
+            # pylint: disable=missing-timeout
             response = requests.post(
                 urljoin(self.endpoint, "sessions"),
                 json={
@@ -73,6 +74,7 @@ class PasswordSession(Session):
             response.raise_for_status()
             access_token = response.json()["access_token"]
 
+            # pylint: disable=consider-using-f-string
             self.headers["Authorization"] = "Token token=%s" % access_token
         except (
             requests.exceptions.ConnectionError,
@@ -92,6 +94,7 @@ class PasswordSession(Session):
         url = self.urljoin(path)
         headers = self.generate_headers(kwargs.pop("headers", None))
         try:
+            # pylint: disable=missing-timeout
             response = requests.get(url, headers=headers, **kwargs)
             response.raise_for_status()
         except (
@@ -205,6 +208,7 @@ class PasswordlessSession(Session):
 
     def send_email_otp(self, email: str):
         """Request an authorization code via email."""
+        # pylint: disable=missing-timeout
         response = requests.post(
             self.vendor.passwordless_endpoint,
             data=json.dumps(
@@ -221,6 +225,7 @@ class PasswordlessSession(Session):
 
     def fetch_token_passwordless(self, email: str, code: str):
         """Fetch an access token using the emailed code."""
+        # pylint: disable=missing-timeout
         response = requests.post(
             self.vendor.token_endpoint,
             data=json.dumps(
@@ -248,9 +253,11 @@ class PasswordlessSession(Session):
         """Make a get request."""
         url = self.urljoin(path)
         headers = self.generate_headers(kwargs.pop("headers", None))
+        # pylint: disable=consider-using-f-string
         headers["Authorization"] = "Auth0Bearer {}".format(self._token.get("id_token"))
 
         try:
+            # pylint: disable=missing-timeout
             response = requests.get(url, headers=headers)
             response.raise_for_status()
         except (

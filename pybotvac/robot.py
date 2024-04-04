@@ -22,6 +22,7 @@ from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
 from .neato import Neato  # For default Vendor argument
 
 # Disable warning due to SubjectAltNameWarning in certificate
+# pylint: disable=no-member
 urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 _LOGGER = logging.getLogger(__name__)
@@ -136,7 +137,7 @@ class Robot:
         self.traits = traits
         self.has_persistent_maps = has_persistent_maps
 
-        # pylint: disable=anomalous-backslash-in-string
+        # pylint: disable=consider-using-f-string
         self._url = "{endpoint}/vendors/{vendor_name}/robots/{serial}/messages".format(
             endpoint=re.sub(r":\d+", "", endpoint),  # Remove port number
             vendor_name=vendor.name,
@@ -157,6 +158,7 @@ class Robot:
             )
 
     def __str__(self):
+        # pylint: disable=consider-using-f-string
         return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (
             self.name,
             self.serial,
@@ -172,6 +174,7 @@ class Robot:
         """
 
         try:
+            # pylint: disable=missing-timeout
             response = requests.post(
                 self._url,
                 json=json,

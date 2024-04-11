@@ -1,4 +1,5 @@
 """Sessionhandling for beehive endpoint."""
+
 import binascii
 import json
 import os
@@ -67,11 +68,13 @@ class PasswordSession(Session):
                     "token": binascii.hexlify(os.urandom(64)).decode("utf8"),
                 },
                 headers=self.headers,
+                timeout=10,
             )
 
             response.raise_for_status()
             access_token = response.json()["access_token"]
 
+            # pylint: disable=consider-using-f-string
             self.headers["Authorization"] = "Token token=%s" % access_token
         except (
             requests.exceptions.ConnectionError,
@@ -91,7 +94,7 @@ class PasswordSession(Session):
         url = self.urljoin(path)
         headers = self.generate_headers(kwargs.pop("headers", None))
         try:
-            response = requests.get(url, headers=headers, **kwargs)
+            response = requests.get(url, headers=headers, timeout=10, **kwargs)
             response.raise_for_status()
         except (
             requests.exceptions.ConnectionError,
@@ -215,6 +218,7 @@ class PasswordlessSession(Session):
                 }
             ),
             headers={"Content-Type": "application/json"},
+            timeout=10,
         )
         response.raise_for_status()
 
@@ -239,6 +243,7 @@ class PasswordlessSession(Session):
                 }
             ),
             headers={"Content-Type": "application/json"},
+            timeout=10,
         )
         response.raise_for_status()
         self._token = response.json()
@@ -247,10 +252,11 @@ class PasswordlessSession(Session):
         """Make a get request."""
         url = self.urljoin(path)
         headers = self.generate_headers(kwargs.pop("headers", None))
+        # pylint: disable=consider-using-f-string
         headers["Authorization"] = "Auth0Bearer {}".format(self._token.get("id_token"))
 
         try:
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=10)
             response.raise_for_status()
         except (
             requests.exceptions.ConnectionError,

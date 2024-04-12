@@ -2,11 +2,12 @@ import hashlib
 import hmac
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from email.utils import format_datetime
 
 import requests
 import urllib3
+from requests.auth import AuthBase
 from voluptuous import (
     ALLOW_EXTRA,
     All,
@@ -22,8 +23,7 @@ from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
 from .neato import Neato  # For default Vendor argument
 
 # Disable warning due to SubjectAltNameWarning in certificate
-# pylint: disable=no-member
-urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
+urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)  # type: ignore
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -137,7 +137,6 @@ class Robot:
         self.traits = traits
         self.has_persistent_maps = has_persistent_maps
 
-        # pylint: disable=consider-using-f-string
         self._url = "{endpoint}/vendors/{vendor_name}/robots/{serial}/messages".format(
             endpoint=re.sub(r":\d+", "", endpoint),  # Remove port number
             vendor_name=vendor.name,
@@ -158,12 +157,11 @@ class Robot:
             )
 
     def __str__(self):
-        # pylint: disable=consider-using-f-string
-        return "Name: %s, Serial: %s, Secret: %s Traits: %s" % (
-            self.name,
-            self.serial,
-            self.secret,
-            self.traits,
+        return (
+            f"Name: {self.name}, "
+            f"Serial: {self.serial}, "
+            f"Secret: {self.secret}, "
+            f"Traits: {self.traits}"
         )
 
     def _message(self, json: dict, schema: Schema):
@@ -173,6 +171,7 @@ class Robot:
         :return: server response
         """
 
+        response = None
         try:
             response = requests.post(
                 self._url,
@@ -274,9 +273,8 @@ class Robot:
             alert = response_fallback.json().get("alert", None)
             if result != "ok":
                 _LOGGER.warning(
-                    "Result of robot.start_cleaning is not ok after fallback: %s, alert: %s",
-                    result,
-                    alert,
+                    "Result of robot.start_cleaning is not ok after fallback: "
+                    f"{result}, alert: {alert}"
                 )
             return response_fallback
 
@@ -402,7 +400,7 @@ class Robot:
         return self.available_services["spotCleaning"]
 
 
-class Auth(requests.auth.AuthBase):
+class Auth(AuthBase):
     """Create headers for request authentication"""
 
     def __init__(self, serial, secret):
@@ -413,7 +411,7 @@ class Auth(requests.auth.AuthBase):
         # We have to format the date according to RFC 2616
         # https://tools.ietf.org/html/rfc2616#section-14.18
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         date = format_datetime(now, True)
 
         try:

@@ -235,10 +235,7 @@ class Account:
 
             if dest_path:
                 image_url = url.rsplit("/", 2)[1] + "-" + url.rsplit("/", 1)[1]
-                if file_name:
-                    image_filename = file_name
-                else:
-                    image_filename = image_url.split("?")[0]
+                image_filename = file_name if file_name else image_url.split("?")[0]
 
                 dest = os.path.join(dest_path, image_filename)
                 image.raise_for_status()

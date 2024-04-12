@@ -1,0 +1,14 @@
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.12
+target-version = "py312"
+
+[lint]
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+# pycodestyle (E), pyflakes (F), pyupgrade (UP), flake builtins (A)
+# flake bandit (S), flake bugbear (B), flake simplify (SIM), isort (I)
+select = ["E", "F", "UP", "A", "S", "B", "SIM", "I"]
+ignore = []

@@ -1,3 +1,5 @@
+# ruff: noqa: F401
+
 from .account import Account
 from .neato import Neato
 from .robot import Robot

@@ -4,7 +4,8 @@ import binascii
 import json
 import os
 import os.path
-from typing import Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 import requests
 from oauthlib.oauth2 import TokenExpiredError
@@ -17,7 +18,7 @@ from .vorwerk import Vorwerk
 try:
     from urllib.parse import urljoin
 except ImportError:
-    from urlparse import urljoin
+    from urlparse import urljoin  # type: ignore
 
 
 class Session:
@@ -35,8 +36,8 @@ class Session:
         return urljoin(self.endpoint, path)
 
     def generate_headers(
-        self, custom_headers: Optional[Dict[str, str]] = None
-    ) -> Dict[str, str]:
+        self, custom_headers: dict[str, str] | None = None
+    ) -> dict[str, str]:
         """Merge self.headers with custom headers id necessary."""
         if not custom_headers:
             return self.headers
@@ -45,7 +46,10 @@ class Session:
 
 
 class PasswordSession(Session):
-    def __init__(self, email: str, password: str, vendor: Vendor = Neato()):
+    def __init__(self, email: str, password: str, vendor: Vendor | None = None):
+        if vendor is None:
+            vendor = Neato()
+
         super().__init__(vendor=vendor)
         self._login(email, password)
 
@@ -74,8 +78,7 @@ class PasswordSession(Session):
             response.raise_for_status()
             access_token = response.json()["access_token"]
 
-            # pylint: disable=consider-using-f-string
-            self.headers["Authorization"] = "Token token=%s" % access_token
+            self.headers["Authorization"] = f"Token token={access_token}"
         except (
             requests.exceptions.ConnectionError,
             requests.exceptions.HTTPError,
@@ -108,13 +111,16 @@ class PasswordSession(Session):
 class OAuthSession(Session):
     def __init__(
         self,
-        token: Optional[Dict[str, str]] = None,
-        client_id: str = None,
-        client_secret: str = None,
-        redirect_uri: str = None,
-        token_updater: Optional[Callable[[str], None]] = None,
-        vendor: Vendor = Neato(),
+        token: dict[str, str] | None = None,
+        client_id: str | None = None,
+        client_secret: str | None = None,
+        redirect_uri: str | None = None,
+        token_updater: Callable[[Any], None] | None = None,
+        vendor: Vendor | None = None,
     ):
+        if vendor is None:
+            vendor = Neato()
+
         super().__init__(vendor=vendor)
 
         self._client_id = client_id
@@ -144,13 +150,12 @@ class OAuthSession(Session):
 
     def get_authorization_url(self) -> str:
         """Get an authorization url via oauth2."""
-        # pylint: disable=unused-variable
         authorization_url, state = self._oauth.authorization_url(
             self.vendor.auth_endpoint
         )
         return authorization_url
 
-    def fetch_token(self, authorization_response: str) -> Dict[str, str]:
+    def fetch_token(self, authorization_response: str) -> dict[str, str]:
         """Fetch an access token via oauth2."""
         token = self._oauth.fetch_token(
             self.vendor.token_endpoint,
@@ -194,11 +199,14 @@ class OAuthSession(Session):
 class PasswordlessSession(Session):
     def __init__(
         self,
-        token: Optional[Dict[str, str]] = None,
-        client_id: str = None,
-        token_updater: Optional[Callable[[str], None]] = None,
-        vendor: Vendor = Vorwerk(),
+        token: dict[str, str] | None = None,
+        client_id: str | None = None,
+        token_updater: Callable[[str], None] | None = None,
+        vendor: Vendor | None = None,
     ):
+        if vendor is None:
+            vendor = Vorwerk()
+
         super().__init__(vendor=vendor)
 
         self._token = token
@@ -252,8 +260,7 @@ class PasswordlessSession(Session):
         """Make a get request."""
         url = self.urljoin(path)
         headers = self.generate_headers(kwargs.pop("headers", None))
-        # pylint: disable=consider-using-f-string
-        headers["Authorization"] = "Auth0Bearer {}".format(self._token.get("id_token"))
+        headers["Authorization"] = f"Auth0Bearer {self._token.get("id_token")}"
 
         try:
             response = requests.get(url, headers=headers, timeout=10)

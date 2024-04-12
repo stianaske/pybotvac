@@ -1,17 +1,10 @@
-import sys
+# ruff: noqa: S105
 
-from pybotvac import (
-    Account,
-    Neato,
-    OAuthSession,
-    PasswordlessSession,
-    PasswordSession,
-    Vorwerk,
-)
+from pybotvac import Account, Neato, OAuthSession
 
 # Set email and password if you plan to use password authentication.
 # Set Client ID and Secret if you plan to use OAuth2.
-# If you plan to use email OTP, all you need to do is specify your email and a Client ID.
+# If you plan to use email OTP, all you need to do is specify your email and a ClientID.
 email = "Your email"
 password = "Your password"
 client_id = "Your client it"

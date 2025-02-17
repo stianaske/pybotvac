@@ -1,7 +1,6 @@
 import hashlib
 import hmac
 import logging
-import re
 from datetime import datetime, timezone
 from email.utils import format_datetime
 
@@ -139,7 +138,7 @@ class Robot:
 
         # pylint: disable=consider-using-f-string
         self._url = "{endpoint}/vendors/{vendor_name}/robots/{serial}/messages".format(
-            endpoint=re.sub(r":\d+", "", endpoint),  # Remove port number
+            endpoint=endpoint,
             vendor_name=vendor.name,
             serial=self.serial,
         )

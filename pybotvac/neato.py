@@ -24,4 +24,4 @@ class Neato(Vendor):
     auth_endpoint = "https://apps.neatorobotics.com/oauth2/authorize"
     token_endpoint = "https://beehive.neatocloud.com/oauth2/token"  # nosec
     scope = ["public_profile", "control_robots", "maps"]
-    cert_path = os.path.join(os.path.dirname(__file__), "cert", "neatocloud.com.crt")
+    cert_path = None

@@ -1,5 +1,3 @@
-import os
-
 from .neato import Vendor
 
 
@@ -11,4 +9,4 @@ class Vorwerk(Vendor):
     scope = ["openid", "email", "profile", "read:current_user", "offline_access"]
     audience = "https://mykobold.eu.auth0.com/userinfo"
     source = "vorwerk_auth0"
-    cert_path = os.path.join(os.path.dirname(__file__), "cert", "ksecosys.com.crt")
+    cert_path = True

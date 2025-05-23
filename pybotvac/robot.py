@@ -5,7 +5,6 @@ from datetime import datetime, timezone
 from email.utils import format_datetime
 
 import requests
-import urllib3
 from voluptuous import (
     ALLOW_EXTRA,
     All,
@@ -19,10 +18,6 @@ from voluptuous import (
 
 from .exceptions import NeatoRobotException, NeatoUnsupportedDevice
 from .neato import Neato  # For default Vendor argument
-
-# Disable warning due to SubjectAltNameWarning in certificate
-# pylint: disable=no-member
-urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 _LOGGER = logging.getLogger(__name__)
 

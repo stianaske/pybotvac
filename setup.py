@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="pybotvac",
-    version="0.0.27",
+    version="0.0.28",
     description="Python package for controlling Neato pybotvac Connected vacuum robot",
     long_description=long_description,
     long_description_content_type="text/markdown",
